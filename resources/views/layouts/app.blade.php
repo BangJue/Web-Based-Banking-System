@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') | NexusBank Premium</title>
+    <title>@yield('title') | IBN Premium</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -46,7 +46,7 @@
                     <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
                         <i class="fa-solid fa-vault text-white"></i>
                     </div>
-                    <h1 class="text-2xl font-black tracking-tighter uppercase">Nexus<span class="text-blue-500">Bank</span></h1>
+                    <h1 class="text-2xl font-black tracking-tighter uppercase">Indonesia National <span class="text-blue-500">Bank</span></h1>
                 </div>
                 <div class="mt-2 inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full">
                     <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Premium Member</span>
@@ -108,7 +108,7 @@
                         <i class="fa-solid fa-bars-staggered"></i>
                     </button>
                     <div>
-                        <h2 class="text-xl font-black text-black">Nexus<span class="text-blue-600">Portal</span></h2>
+                        <h2 class="text-xl font-black text-black">IBN <span class="text-blue-600">Portal</span></h2>
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5">Premium Interface v2.0</p>
                     </div>
                 </div>
@@ -139,7 +139,7 @@
 
             <footer class="mt-auto py-8 px-10 border-t border-gray-200/50">
                 <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">&copy; 2026 NexusBank Digital Ecosystem.</p>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">&copy; 2026 IBN Digital Ecosystem.</p>
                     <div class="flex gap-6">
                         <a href="#" class="text-[10px] font-black text-gray-500 hover:text-blue-600 uppercase tracking-widest transition-colors">Syarat & Ketentuan</a>
                         <a href="#" class="text-[10px] font-black text-gray-500 hover:text-blue-600 uppercase tracking-widest transition-colors">Privasi</a>

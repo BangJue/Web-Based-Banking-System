@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account | NexusBank Premium</title>
+    <title>Create Account | IBN Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -29,7 +29,7 @@
                         <i class="fa-solid fa-building-columns text-2xl"></i>
                     </div>
                     <span class="font-bold text-2xl tracking-wider uppercase">
-                        Nexus<span class="text-blue-500">Bank</span>
+                        Indonesia National <span class="text-blue-500">Bank</span>
                     </span>
                 </div>
 
@@ -69,7 +69,7 @@
                 <div>
                     <h2 class="text-4xl font-black text-black tracking-tight">Create Account</h2>
                     <p class="text-gray-500 mt-2 font-medium">
-                        Lengkapi data diri Anda untuk membuka rekening NexusBank.
+                        Lengkapi data diri Anda untuk membuka rekening Indonesia National Bank.
                     </p>
                 </div>
 

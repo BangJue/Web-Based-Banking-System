@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Transaction;
 use App\Models\Transfer;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,13 +19,15 @@ class TransferController extends Controller
      */
     public function create()
     {
-        $accounts = Auth::user()->accounts()->where('status', 'active')->get();
+        /** @var User $user */
+        $user = Auth::user();
+        $accounts = $user->accounts()->where('status', 'active')->get();
 
         return view('transfers.create', compact('accounts'));
     }
 
     /**
-     * Cek rekening tujuan (AJAX — dipanggil saat user ketik nomor rekening).
+     * Cek rekening tujuan (AJAX).
      */
     public function checkDestination(Request $request)
     {
@@ -43,7 +46,6 @@ class TransferController extends Controller
 
         return response()->json([
             'account_number' => $destination->account_number,
-            'account_type'   => $destination->account_type_label,
             'owner_name'     => $destination->user->name,
         ]);
     }
@@ -57,7 +59,7 @@ class TransferController extends Controller
             'from_account_id'    => ['required', 'exists:accounts,id'],
             'to_account_number'  => ['required', 'string'],
             'amount'             => ['required', 'integer', 'min:10000'],
-            'method'             => ['required', Rule::in(array_keys(Transfer::ADMIN_FEES))],
+            'method'             => ['required', Rule::in(['bi_fast', 'realtime', 'skn', 'rtgs'])],
             'note'               => ['nullable', 'string', 'max:255'],
             'pin'                => ['required', 'digits:6'],
         ]);
@@ -67,62 +69,60 @@ class TransferController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        // Otorisasi rekening asal
         if ($fromAccount->user_id !== Auth::id()) {
-            abort(403, 'Rekening bukan milikmu.');
+            abort(403);
         }
 
-        // Tidak boleh transfer ke rekening sendiri
         if ($fromAccount->id === $toAccount->id) {
-            return back()->with('error', 'Tidak dapat transfer ke rekening yang sama.');
+            return back()->with('error', 'Tidak dapat transfer ke rekening sendiri.');
         }
 
-        // Verifikasi PIN
+        // Pastikan model Account memiliki field pin
         if (!Hash::check($request->pin, $fromAccount->pin)) {
             return back()->withErrors(['pin' => 'PIN tidak sesuai.'])->withInput();
         }
 
-        $adminFee = Transfer::getFeeByMethod($request->method);
+        $adminFee = 2500; // Contoh biaya statis, atau ambil dari Transfer::ADMIN_FEES
         $total    = $request->amount + $adminFee;
 
         if ($fromAccount->balance < $total) {
-            return back()->with('error', 'Saldo tidak mencukupi. Butuh Rp ' . number_format($total, 0, ',', '.'));
+            return back()->with('error', 'Saldo tidak mencukupi.');
         }
 
         DB::transaction(function () use ($fromAccount, $toAccount, $request, $adminFee, $total) {
-            $balanceBefore = $fromAccount->balance;
-            $fromAccount->decrement('balance', $total);
-            $fromAccount->refresh();
+            $ref = $this->generateRefCode('TRF');
 
-            // Transaksi debit rekening asal
+            // 1. Rekening Pengirim (Debit)
+            $balanceBeforeOut = $fromAccount->balance;
+            $fromAccount->decrement('balance', $total);
+            
             $txOut = Transaction::create([
                 'account_id'       => $fromAccount->id,
-                'type'             => Transaction::TYPE_TRANSFER_OUT,
+                'type'             => 'transfer_out',
                 'amount'           => $total,
-                'balance_before'   => $balanceBefore,
-                'balance_after'    => $fromAccount->balance,
-                'description'      => 'Transfer ke ' . $toAccount->account_number . ' - ' . ($request->note ?? '-'),
-                'reference_number' => $this->generateRefCode('TRF'),
+                'balance_before'   => $balanceBeforeOut,
+                'balance_after'    => $fromAccount->fresh()->balance,
+                'description'      => 'Transfer ke ' . $toAccount->account_number . ' (' . $request->note . ')',
+                'reference_code'   => $ref, // Sesuaikan kolom DB Anda
                 'status'           => 'success',
             ]);
 
-            // Transaksi kredit rekening tujuan
-            $balanceBeforeTo = $toAccount->balance;
+            // 2. Rekening Penerima (Kredit)
+            $balanceBeforeIn = $toAccount->balance;
             $toAccount->increment('balance', $request->amount);
-            $toAccount->refresh();
 
-            $txIn = Transaction::create([
+            Transaction::create([
                 'account_id'       => $toAccount->id,
-                'type'             => Transaction::TYPE_TRANSFER_IN,
+                'type'             => 'transfer_in',
                 'amount'           => $request->amount,
-                'balance_before'   => $balanceBeforeTo,
-                'balance_after'    => $toAccount->balance,
-                'description'      => 'Transfer dari ' . $fromAccount->account_number,
-                'reference_number' => $txOut->reference_number, // sama agar bisa ditelusuri
+                'balance_before'   => $balanceBeforeIn,
+                'balance_after'    => $toAccount->fresh()->balance,
+                'description'      => 'Transfer masuk dari ' . $fromAccount->account_number,
+                'reference_code'   => $ref,
                 'status'           => 'success',
             ]);
 
-            // Detail transfer
+            // 3. Detail Transfer
             Transfer::create([
                 'transaction_id'  => $txOut->id,
                 'from_account_id' => $fromAccount->id,
@@ -131,52 +131,33 @@ class TransferController extends Controller
                 'admin_fee'       => $adminFee,
                 'method'          => $request->method,
                 'note'            => $request->note,
+                'status'          => 'success',
             ]);
         });
 
-        return redirect()->route('transactions.index')
-            ->with('success', 'Transfer Rp ' . number_format($request->amount, 0, ',', '.') . ' berhasil dikirim.');
+        return redirect()->route('dashboard')->with('success', 'Transfer berhasil dikirim.');
     }
 
-    /**
-     * Riwayat transfer user.
-     */
-    public function index(Request $request)
+    public function index()
     {
-        $accountIds = Auth::user()->accounts()->pluck('id');
+        /** @var User $user */
+        $user = Auth::user();
+        $accountIds = $user->accounts()->pluck('id');
 
-        $transfers = Transfer::where(function ($q) use ($accountIds) {
-            $q->whereIn('from_account_id', $accountIds)
-              ->orWhereIn('to_account_id', $accountIds);
-        })
-            ->with([
-                'transaction',
-                'fromAccount.user',
-                'toAccount.user',
-            ])
-            ->when($request->method, fn($q) => $q->where('method', $request->method))
-            ->when($request->date_from, fn($q) => $q->whereHas('transaction', fn($tq) =>
-                $tq->whereDate('created_at', '>=', $request->date_from)
-            ))
-            ->when($request->date_to, fn($q) => $q->whereHas('transaction', fn($tq) =>
-                $tq->whereDate('created_at', '<=', $request->date_to)
-            ))
+        $transfers = Transfer::whereIn('from_account_id', $accountIds)
+            ->orWhereIn('to_account_id', $accountIds)
+            ->with(['fromAccount.user', 'toAccount.user', 'transaction'])
             ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->paginate(15);
 
         return view('transfers.index', compact('transfers'));
     }
 
-    // -------------------------------------------------------------------------
-    // Helper
-    // -------------------------------------------------------------------------
-
     private function generateRefCode(string $prefix): string
     {
         do {
-            $code = $prefix . strtoupper(substr(uniqid(), -8)) . mt_rand(100, 999);
-        } while (Transaction::where('reference_number', $code)->exists());
+            $code = $prefix . strtoupper(substr(uniqid(), -8));
+        } while (Transaction::where('reference_code', $code)->exists());
 
         return $code;
     }

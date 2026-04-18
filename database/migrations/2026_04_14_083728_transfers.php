@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId('to_account_id')->constrained('accounts')->cascadeOnDelete();
             $table->bigInteger('amount')->comment('Jumlah transfer dalam Rupiah');
             $table->string('note')->nullable()->comment('Berita/catatan transfer');
-            $table->enum('method', ['online', 'rtgs', 'sknbi', 'bifast'])->default('online');
+            $table->enum('method', ['internal', 'bi_fast', 'realtime', 'bank_transfer'])->default('internal');
             $table->bigInteger('admin_fee')->default(0)->comment('Biaya administrasi transfer');
             $table->timestamps();
 

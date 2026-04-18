@@ -10,19 +10,20 @@ class TopUp extends Model
 {
     use HasFactory;
 
+    // Sesuaikan dengan ENUM di bank.sql
     const SOURCE_ATM            = 'atm';
     const SOURCE_MINIMARKET     = 'minimarket';
     const SOURCE_MOBILE_BANKING = 'mobile_banking';
-    const SOURCE_INTERNET       = 'internet_banking';
-    const SOURCE_TELLER         = 'teller';
-    const SOURCE_TRANSFER       = 'transfer';
+    const SOURCE_TRANSFER       = 'transfer_bank'; // Di DB: transfer_bank
+    const SOURCE_ADMIN          = 'admin';
 
     protected $fillable = [
         'transaction_id',
         'account_id',
         'amount',
-        'source',
-        'reference_code',
+        'channel',   // Di DB: channel
+        'reference', // Di DB: reference
+        'status',
     ];
 
     protected function casts(): array
@@ -31,10 +32,6 @@ class TopUp extends Model
             'amount' => 'integer',
         ];
     }
-
-    // -------------------------------------------------------------------------
-    // Relationships
-    // -------------------------------------------------------------------------
 
     public function transaction(): BelongsTo
     {
@@ -46,20 +43,14 @@ class TopUp extends Model
         return $this->belongsTo(Account::class);
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers / Accessors
-    // -------------------------------------------------------------------------
-
     public function getSourceLabelAttribute(): string
     {
-        return match ($this->source) {
+        return match ($this->channel) {
             self::SOURCE_ATM            => 'ATM',
             self::SOURCE_MINIMARKET     => 'Minimarket',
             self::SOURCE_MOBILE_BANKING => 'Mobile Banking',
-            self::SOURCE_INTERNET       => 'Internet Banking',
-            self::SOURCE_TELLER         => 'Teller Bank',
-            self::SOURCE_TRANSFER       => 'Transfer Bank Lain',
-            default                     => ucwords(str_replace('_', ' ', $this->source)),
+            self::SOURCE_TRANSFER       => 'Transfer Bank',
+            default                     => ucwords(str_replace('_', ' ', $this->channel)),
         };
     }
 }

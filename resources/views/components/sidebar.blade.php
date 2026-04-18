@@ -1,9 +1,3 @@
-{{--
-╔══════════════════════════════════════════════════════════════╗
-║  resources/views/components/sidebar.blade.php                ║
-║  NexusBank — Pure Tailwind Sidebar (self-contained)          ║
-╚══════════════════════════════════════════════════════════════╝
---}}
 
 @php
     /* ── Shared class tokens ─────────────────────────── */
@@ -77,7 +71,7 @@
             </div>
             <div>
                 <h1 class="text-[21px] font-black tracking-tight text-white leading-none">
-                    Nexus<span class="text-blue-400">Bank</span>
+                    Indonesia National<span class="text-blue-400">Bank</span>
                 </h1>
                 <p class="text-[9px] font-extrabold text-gray-500 uppercase tracking-[0.22em] mt-1">
                     Digital Ecosystem

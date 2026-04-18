@@ -82,11 +82,15 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ── Transfer ────────────────────────────────────────────
-        Route::controller(TransferController::class)->group(function () {
-            Route::get('transfer', 'create')->name('transfers.create');
-            Route::post('transfer', 'store')->name('transfers.store');
-            Route::get('transfers', 'index')->name('transfers.index');
-            Route::post('transfer/check-destination', 'checkDestination')->name('transfers.check_destination');
+        Route::middleware(['auth', 'verified'])->group(function () {
+            // Route untuk menampilkan form transfer
+            Route::get('/transfer', [TransferController::class, 'create'])->name('transfers.create');
+            // TAMBAHKAN BARIS INI:
+            Route::get('/transfer/check', [TransferController::class, 'checkDestination'])->name('transfers.check');
+            // Route untuk proses submit transfer
+            Route::post('/transfer', [TransferController::class, 'store'])->name('transfers.store');
+            // Riwayat transfer
+            Route::get('/transfers', [TransferController::class, 'index'])->name('transfers.index');
         });
 
         // ── Top Up (User) ───────────────────────────────────────

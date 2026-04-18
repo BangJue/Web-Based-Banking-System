@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | NexusBank Premium</title>
+    <title>Login | IBN Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,7 +27,7 @@
                     <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/50">
                         <i class="fa-solid fa-building-columns text-2xl"></i>
                     </div>
-                    <span class="font-bold text-2xl tracking-wider uppercase">Nexus<span class="text-blue-500">Bank</span></span>
+                    <span class="font-bold text-2xl tracking-wider uppercase">Indonesia National <span class="text-blue-500">Bank</span></span>
                 </div>
 
                 <div class="space-y-6 max-w-md">
@@ -52,7 +52,7 @@
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
                     <i class="fa-solid fa-building-columns text-sm"></i>
                 </div>
-                <span class="font-bold text-xl text-black">NexusBank</span>
+                <span class="font-bold text-xl text-black">IBN</span>
             </div>
 
             <div class="w-full max-w-md space-y-8" 
