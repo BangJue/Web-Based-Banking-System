@@ -37,8 +37,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        /** @var \App\Models\User $user */
-
+        /** @var User $user */
         $user->load(['profile', 'accounts']);
 
         $recentTransactions = Transaction::whereIn('account_id', $user->accounts->pluck('id'))
@@ -55,8 +54,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        /** @var \App\Models\User $user */
-
+        /** @var User $user */
         $user->load('profile');
         return view('admin.users.edit', compact('user'));
     }
@@ -66,7 +64,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         
         $request->validate([
             'name'       => ['required', 'string', 'max:255'],
@@ -96,7 +94,7 @@ class UserController extends Controller
      */
     public function toggleActive(User $user)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
 
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Tidak dapat menonaktifkan akun sendiri.');
@@ -113,7 +111,7 @@ class UserController extends Controller
      */
     public function resetPassword(Request $request, User $user)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
 
         $request->validate([
             'new_password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -129,7 +127,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
 
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Tidak dapat menghapus akun sendiri.');

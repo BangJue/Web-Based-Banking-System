@@ -120,66 +120,64 @@
 
     {{-- ================= TABLE ================= --}}
     <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-
-        <div class="p-6 md:p-8 border-b border-gray-50 flex justify-between items-center">
-            <h3 class="font-bold text-xl text-black">Recent Transactions</h3>
-            <a href="{{ route('transactions.index') }}"
-               class="text-blue-600 font-bold text-sm hover:underline">
-                View All
-            </a>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-
-                <thead>
-                    <tr class="bg-gray-50/50">
-                        <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Type</th>
-                        <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Reference</th>
-                        <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Date</th>
-                        <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Amount</th>
-                    </tr>
-                </thead>
-
-                <tbody class="divide-y divide-gray-50">
-                    @foreach($recentTransactions as $tx)
-                    <tr class="hover:bg-blue-50/30 transition-colors">
-
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center
-                                    {{ $tx->type == 'debit' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
-                                    <i class="fa-solid {{ $tx->type == 'debit' ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
-                                </div>
-                                <span class="font-bold text-black capitalize">
-                                    {{ str_replace('_', ' ', $tx->type) }}
-                                </span>
-                            </div>
-                        </td>
-
-                        <td class="px-6 py-4 text-sm font-medium text-gray-600">
-                            {{ $tx->reference_no ?? '-' }}
-                        </td>
-
-                        <td class="px-6 py-4 text-sm text-gray-400 font-medium">
-                            {{ $tx->created_at->format('d M Y, H:i') }}
-                        </td>
-
-                        <td class="px-6 py-4 text-right">
-                            <span class="font-black
-                                {{ $tx->type == 'debit' ? 'text-red-600' : 'text-green-600' }}">
-                                {{ $tx->type == 'debit' ? '-' : '+' }}
-                                IDR {{ number_format($tx->amount, 0, ',', '.') }}
-                            </span>
-                        </td>
-
-                    </tr>
-                    @endforeach
-                </tbody>
-
-            </table>
-        </div>
+    <div class="p-6 md:p-8 border-b border-gray-50 flex justify-between items-center">
+        <h3 class="font-bold text-xl text-black">Recent Transactions</h3>
+        <a href="{{ route('transactions.index') }}" class="text-blue-600 font-bold text-sm hover:underline">
+            View All
+        </a>
     </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50/50">
+                    <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Type</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Reference</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Date</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Amount</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y divide-gray-50">
+                @foreach($recentTransactions as $tx)
+                @php
+                    // Logika untuk menentukan apakah uang keluar
+                    // Sesuaikan dengan konstanta TYPE di model Transaction kamu
+                    $isOutgoing = in_array($tx->type, ['transfer', 'bill_payment', 'loan_payment', 'withdrawal', 'debit']);
+                @endphp
+                <tr class="hover:bg-blue-50/30 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center
+                                {{ $isOutgoing ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
+                                <i class="fa-solid {{ $isOutgoing ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
+                            </div>
+                            <span class="font-bold text-black capitalize">
+                                {{ str_replace('_', ' ', $tx->type) }}
+                            </span>
+                        </div>
+                    </td>
+
+                    <td class="px-6 py-4 text-sm font-medium text-gray-600">
+                        {{ $tx->reference_number ?? '-' }}
+                    </td>
+
+                    <td class="px-6 py-4 text-sm text-gray-400 font-medium">
+                        {{ $tx->created_at->format('d M Y, H:i') }}
+                    </td>
+
+                    <td class="px-6 py-4 text-right">
+                        <span class="font-black {{ $isOutgoing ? 'text-red-600' : 'text-green-600' }}">
+                            {{ $isOutgoing ? '-' : '+' }}
+                            IDR {{ number_format($tx->amount, 0, ',', '.') }}
+                        </span>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
 
 </div>
 @endsection

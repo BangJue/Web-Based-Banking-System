@@ -3,3 +3,8 @@ Features :
     Top Up Saldo ✔
     Loans ✔
     Transaction (details,report,receipt,etc) ✔
+
+Need to Fixed :
+    Dashboard admin persetujuan pinjaman baru detail dan jumlah pinjaman tidak muncul.
+    Detail Pinjaman tidak muncul jumlah,alasan,dll.
+    Rejet pinjaman redirect ke loans users bukan admin.

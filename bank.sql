@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 18, 2026 at 04:25 AM
+-- Generation Time: Apr 19, 2026 at 03:49 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.26
 
@@ -197,6 +197,13 @@ CREATE TABLE `loans` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `loans`
+--
+
+INSERT INTO `loans` (`id`, `account_id`, `principal`, `interest_rate`, `tenor_months`, `monthly_installment`, `total_debt`, `remaining_debt`, `paid_installments`, `status`, `purpose`, `rejection_reason`, `disbursed_at`, `due_date`, `created_at`, `updated_at`) VALUES
+(1, 1, 1000000, 12.00, 3, 343334, 1030000, 1030000, 0, 'pending', 'Modal buka toko', NULL, NULL, NULL, '2026-04-18 19:49:20', '2026-04-18 19:49:20');
+
 -- --------------------------------------------------------
 
 --
@@ -338,8 +345,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('2Ee37m5tf897tTp8Ub0B05YwOTuQgMK3qERDI9A9', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJ0a1J0U1VTR2lzcllXaXZPMlU5MXREbWdTU1BOaXVXZG9NcWZLSmJFIiwidXJsIjpbXSwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC90cmFuc2FjdGlvbnMiLCJyb3V0ZSI6InRyYW5zYWN0aW9ucy5pbmRleCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoyfQ==', 1776486163),
-('rgLeEuizFaSYoTiAJmcDwKtTSXfp6iAii1LlIbGS', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJUTFFWVnlkSm9lV3lwelg0TTZURFM5VURhejlPdkU1TUVmckxLUUVsIiwiX2ZsYXNoIjp7Im5ldyI6W10sIm9sZCI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2Rhc2hib2FyZCIsInJvdXRlIjoiZGFzaGJvYXJkIn0sInVybCI6W10sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==', 1776486103);
+('aDZNwxnsTmRq88mv4XL5H6swhbkpRGT5c85ey6zr', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJyV1RmSEUybUU3dmxNMjJvTGRNU3BXV2h6b3IwSTZBMkpLMnR3QTlVIiwiX2ZsYXNoIjp7Im5ldyI6W10sIm9sZCI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2FkbWluXC9sb2Fuc1wvMSIsInJvdXRlIjoiYWRtaW4ubG9hbnMuc2hvdyJ9LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6M30=', 1776570469);
 
 -- --------------------------------------------------------
 
@@ -456,7 +462,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `phone`, `nik`, `address`, `birth_date`, `gender`, `photo`, `role`, `is_active`, `remember_token`, `created_at`, `updated_at`) VALUES
 (1, 'Muhammad Iqbal', 'muhammad.iqbal.31d@gmail.com', '2026-04-17 00:58:25', '$2y$12$ugNEgvArVSfI0gZ1BbGoKecMHfAmsK2hMyY4MpmsR6VYw.cu2UXGu', '0895632651921', '1234567890987654', 'Jl.Sukakarya', '2006-12-31', 'male', NULL, 'user', 1, NULL, '2026-04-17 00:45:00', '2026-04-17 00:58:25'),
-(2, 'Ariq', 'crocodille.000@gmail.com', '2026-04-17 21:06:54', '$2y$12$qDCtWPCQUnq5llPbDJqay.NWsuLkBn6zUY1FF8wQSvMhwfstkxV2e', '085161676029', '1234567876543212', 'Jl.Macan Lindungan', '2006-12-31', 'male', NULL, 'user', 1, NULL, '2026-04-17 21:01:52', '2026-04-17 21:06:54');
+(2, 'Ariq', 'crocodille.000@gmail.com', '2026-04-17 21:06:54', '$2y$12$qDCtWPCQUnq5llPbDJqay.NWsuLkBn6zUY1FF8wQSvMhwfstkxV2e', '085161676029', '1234567876543212', 'Jl.Macan Lindungan', '2006-12-31', 'male', NULL, 'user', 1, NULL, '2026-04-17 21:01:52', '2026-04-17 21:06:54'),
+(3, 'Administrator Nexus', 'admin@nexus.com', '2026-04-18 20:16:48', '$2y$12$rQExfKYlNSEdQByz9jjXeeeXB5xF2L26/RJEiSTgxo5r69bvUsZ72', NULL, NULL, NULL, NULL, NULL, NULL, 'admin', 1, 'zYuKVjMr5k', '2026-04-18 20:16:49', '2026-04-18 20:16:49');
 
 --
 -- Indexes for dumped tables
@@ -654,7 +661,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `loans`
 --
 ALTER TABLE `loans`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `loan_payments`
@@ -708,7 +715,7 @@ ALTER TABLE `transfers`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables

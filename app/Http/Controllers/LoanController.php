@@ -49,6 +49,7 @@ class LoanController extends Controller
 
         return view('loans.create', compact('userAccounts'));
     }
+    
 
     /**
      * Simulasi cicilan (AJAX).
@@ -134,67 +135,87 @@ class LoanController extends Controller
      * Detail pinjaman.
      */
     public function show(Loan $loan)
-    {
-        $this->authorizeLoan($loan);
+{
+    /** @var \App\Models\User $user */
+    $user = auth()->user();
 
-        $loan->load(['account.user', 'loanPayments.transaction']);
-
-        return view('loans.show', compact('loan'));
+    // Sekarang Intelephense tidak akan protes lagi
+    if ($user->role === 'user' && $loan->account->user_id !== $user->id) {
+        abort(403);
     }
+
+    if ($user->role === 'admin') {
+        return view('admin.loans.show', compact('loan'));
+    }
+
+    return view('loans.show', compact('loan'));
+}
 
     /**
      * Bayar cicilan pinjaman.
      */
-    public function pay(Request $request, Loan $loan)
-    {
-        $this->authorizeLoan($loan);
+   public function pay(Request $request, Loan $loan)
+{
+    $this->authorizeLoan($loan);
 
-        $request->validate([
-            'account_id' => ['required', 'exists:accounts,id'],
-            'pin'        => ['required', 'digits:6'],
-        ]);
+    $request->validate([
+        'account_id' => ['required', 'exists:accounts,id'],
+        'pin'        => ['required', 'string', 'size:6'], // Gunakan size:6
+    ]);
 
-        if (!$loan->isActive()) {
-            return back()->with('error', 'Pinjaman tidak dalam status aktif.');
-        }
+    // 1. Cek Status Pinjaman
+    if (!$loan->isActive()) {
+        return back()->with('error', 'Pinjaman tidak dalam status aktif atau sudah lunas.');
+    }
 
-        $account = Account::findOrFail($request->account_id);
+    $account = Account::findOrFail($request->account_id);
 
-        if ($account->user_id !== Auth::id()) {
-            abort(403);
-        }
+    // 2. Validasi Kepemilikan Rekening
+    if ($account->user_id !== Auth::id()) {
+        abort(403);
+    }
 
-        if (!Hash::check($request->pin, $account->pin)) {
-            return back()->withErrors(['pin' => 'PIN tidak sesuai.']);
-        }
+    // 3. Validasi PIN
+    // TIPS: Jika PIN kamu di database BUKAN hasil Hash::make, ganti baris ini menjadi:
+    // if ($request->pin !== $account->pin) { ... }
+    if (!Hash::check($request->pin, $account->pin)) {
+        return back()->withErrors(['pin' => 'PIN yang Anda masukkan salah.'])->withInput();
+    }
 
-        $amount = $loan->monthly_installment;
+    $amount = (int) $loan->monthly_installment;
 
-        if ($account->balance < $amount) {
-            return back()->with('error', 'Saldo tidak mencukupi untuk membayar cicilan Rp ' . number_format($amount, 0, ',', '.'));
-        }
+    // 4. Cek Saldo
+    if ($account->balance < $amount) {
+        return back()->with('error', 'Saldo rekening ' . $account->account_number . ' tidak mencukupi.');
+    }
 
-        $totalInterest   = $loan->total_debt - $loan->principal;
-        $interestPerMonth = (int) ceil($totalInterest / $loan->tenor_months);
-        $principalPerMonth = $amount - $interestPerMonth;
-        $remainingAfter  = $loan->remaining_debt - $amount;
+    // 5. Kalkulasi Pembagian Pokok & Bunga
+    $totalInterest    = $loan->total_debt - $loan->principal;
+    $interestPerMonth = (int) ceil($totalInterest / $loan->tenor_months);
+    $principalPerMonth = $amount - $interestPerMonth;
+    $remainingAfter   = $loan->remaining_debt - $amount;
 
+    try {
         DB::transaction(function () use ($account, $loan, $amount, $principalPerMonth, $interestPerMonth, $remainingAfter) {
             $balanceBefore = $account->balance;
+            
+            // Kurangi Saldo
             $account->decrement('balance', $amount);
             $account->refresh();
 
+            // Catat Transaksi
             $tx = Transaction::create([
                 'account_id'       => $account->id,
                 'type'             => Transaction::TYPE_LOAN_PAYMENT,
                 'amount'           => $amount,
                 'balance_before'   => $balanceBefore,
                 'balance_after'    => $account->balance,
-                'description'      => 'Cicilan pinjaman ke-' . ($loan->paid_installments + 1),
+                'description'      => 'Pembayaran Cicilan INB Ke-' . ($loan->paid_installments + 1),
                 'reference_number' => $this->generateRefCode('CIC'),
                 'status'           => 'success',
             ]);
 
+            // Catat Detail Pembayaran Pinjaman
             LoanPayment::create([
                 'transaction_id'     => $tx->id,
                 'loan_id'            => $loan->id,
@@ -206,22 +227,27 @@ class LoanController extends Controller
                 'paid_at'            => now(),
             ]);
 
-            $newPaidInstallments = $loan->paid_installments + 1;
-            $isPaidOff           = $newPaidInstallments >= $loan->tenor_months;
+            // Update Status Pinjaman
+            $newPaidCount = $loan->paid_installments + 1;
+            $isPaidOff    = $newPaidCount >= $loan->tenor_months || $remainingAfter <= 0;
 
             $loan->update([
-                'paid_installments' => $newPaidInstallments,
+                'paid_installments' => $newPaidCount,
                 'remaining_debt'    => max(0, $remainingAfter),
                 'status'            => $isPaidOff ? Loan::STATUS_PAID_OFF : Loan::STATUS_ACTIVE,
             ]);
         });
 
         $message = $loan->fresh()->isPaidOff()
-            ? '🎉 Selamat! Pinjaman kamu sudah LUNAS di Indonesia National Bank.'
-            : 'Cicilan ke-' . $loan->fresh()->paid_installments . ' berhasil dibayar.';
+            ? '🎉 Selamat! Pinjaman Anda telah LUNAS.'
+            : 'Pembayaran cicilan ke-' . ($loan->paid_installments) . ' berhasil.';
 
-        return redirect()->route('loans.show', $loan)->with('success', $message);
+        return redirect()->route('loans.show', $loan->id)->with('success', $message);
+
+    } catch (\Exception $e) {
+        return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
     }
+}
 
     /**
      * Setujui pinjaman (Admin).
@@ -267,33 +293,49 @@ class LoanController extends Controller
         return back()->with('success', 'Pinjaman disetujui dan dana telah dicairkan ke rekening INB nasabah.');
     }
 
-    /**
-     * Tolak pinjaman (Admin).
-     */
+            /**
+         * Menampilkan halaman form pembayaran cicilan.
+         */
+        public function paymentForm(Loan $loan)
+        {
+            $this->authorizeLoan($loan);
+
+            if (!$loan->isActive()) {
+                return redirect()->route('loans.show', $loan)->with('error', 'Pinjaman tidak dalam status aktif.');
+            }
+
+            /** @var User $user */
+            $user = Auth::user();
+            $userAccounts = $user->accounts()->where('status', 'active')->get();
+
+            return view('loans.pay', compact('loan', 'userAccounts'));
+        }
+
     public function reject(Request $request, Loan $loan)
-    {
-        /** @var User $user */
-        $user = Auth::user();
-
-        if ($user->role !== 'admin') {
-            abort(403);
-        }
-
-        $request->validate([
-            'rejection_reason' => ['required', 'string', 'max:500'],
-        ]);
-
-        if (!$loan->isPending()) {
-            return back()->with('error', 'Hanya pinjaman berstatus pending yang dapat ditolak.');
-        }
-
-        $loan->update([
-            'status'           => Loan::STATUS_REJECTED,
-            'rejection_reason' => $request->rejection_reason,
-        ]);
-
-        return back()->with('success', 'Pinjaman telah ditolak oleh sistem INB.');
+{
+    // 1. Cek Role Admin
+    if (auth()->user()->role !== 'admin') {
+        abort(403);
     }
+
+    // 2. Validasi (Pastikan field ini dikirim dari Blade)
+    $request->validate([
+        'rejection_reason' => ['required', 'string', 'max:500'],
+    ]);
+
+    // 3. Cek Status (Gunakan string langsung jika konstanta tidak terbaca)
+    if ($loan->status !== 'pending') {
+        return back()->with('error', 'Status pinjaman sudah bukan pending.');
+    }
+
+    // 4. Update
+    $loan->update([
+        'status' => 'rejected', // Sesuaikan dengan nama status di DB kamu
+        'rejection_reason' => $request->rejection_reason,
+    ]);
+
+    return redirect()->route('admin.loans.index')->with('success', 'Pinjaman berhasil ditolak.');
+}
 
     // -------------------------------------------------------------------------
     // Helper

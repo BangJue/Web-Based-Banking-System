@@ -8,7 +8,7 @@
         </a>
         <div class="flex gap-3">
             @if($loan->status == 'active')
-                <a href="{{ route('loans.payment.create', $loan->id) }}" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">
+                <a href="{{ route('loans.pay.form', $loan->id) }}" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">
                     Bayar Cicilan
                 </a>
             @endif

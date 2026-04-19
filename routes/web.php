@@ -112,13 +112,15 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ── Pinjaman ────────────────────────────────────────────
+        // --- AREA NASABAH (USER) ---
         Route::controller(LoanController::class)->group(function () {
             Route::get('loans', 'index')->name('loans.index');
             Route::get('loans/apply', 'create')->name('loans.create');
             Route::post('loans/simulate', 'simulate')->name('loans.simulate');
             Route::post('loans', 'store')->name('loans.store');
-            Route::get('loans/{loan}', 'show')->name('loans.show');
+            Route::get('loans/{loan}/pay', 'paymentForm')->name('loans.pay.form'); 
             Route::post('loans/{loan}/pay', 'pay')->name('loans.pay');
+            Route::get('loans/{loan}', 'show')->name('loans.show');
         });
 
         // ── Buku Tabungan ───────────────────────────────────────
@@ -144,31 +146,32 @@ Route::middleware(['auth'])->group(function () {
         // Admin Area (Khusus Role Admin & Sudah Verifikasi)
         // ============================================================
         Route::prefix('admin')->name('admin.')->group(function () {
-
-            // Dashboard Admin
+            
+            // 1. Dashboard (Folder: views/admin/dashboard/admin.blade.php)
+            // Sesuaikan di DashboardController agar return view('admin.dashboard.admin')
             Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
-            // ── Manajemen User ──────────────────────────────────────
-            Route::resource('users', AdminUserController::class)->except(['create', 'store']);
-            Route::controller(AdminUserController::class)->group(function () {
-                Route::patch('users/{user}/toggle-active', 'toggleActive')->name('users.toggle_active');
-                Route::post('users/{user}/reset-password', 'resetPassword')->name('users.reset_password');
-                Route::get('accounts', 'accounts')->name('accounts.index');
-            });
+            // 2. Manajemen Users (Folder: views/admin/users)
+            // Sesuai gambar: index.blade.php & show.blade.php
+            Route::resource('users', AdminUserController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 
-            // ── Manajemen Tagihan (Admin CRUD) ──────────────────────
-            Route::resource('bills', BillController::class)->except(['index', 'show']);
+            // 3. Manajemen Accounts & Top Up (Folder: views/admin/accounts)
+            // Sesuai gambar: top_up.blade.php
+            Route::get('accounts', [AdminUserController::class, 'accounts'])->name('accounts.index');
+            Route::get('accounts/{account}/top-up', [TopUpController::class, 'create'])->name('accounts.top_up');
+            Route::post('accounts/{account}/top-up', [TopUpController::class, 'store'])->name('accounts.top_up.store');
 
-            // ── Manajemen Pinjaman ──────────────────────────────────
-            Route::controller(LoanController::class)->group(function () {
+            // 4. Manajemen Tagihan / Bills (Folder: views/admin/bills)
+            // Sesuai gambar: index.blade.php & create.blade.php
+            Route::resource('bills', BillController::class);
+
+            // 5. Manajemen Pinjaman / Loans (Folder: views/admin/loans)
+            // Sesuai gambar: index.blade.php (Belum ada show.blade.php)
+           Route::controller(LoanController::class)->group(function () {
+                Route::get('loans', 'index')->name('loans.index'); 
+                Route::get('loans/{loan}', 'show')->name('loans.show'); 
                 Route::post('loans/{loan}/approve', 'approve')->name('loans.approve');
                 Route::post('loans/{loan}/reject', 'reject')->name('loans.reject');
-            });
-
-            // ── Top Up Manual oleh Admin ────────────────────────────
-            Route::controller(TopUpController::class)->group(function () {
-                Route::get('accounts/{account}/top-up', 'create')->name('accounts.top_up');
-                Route::post('accounts/{account}/top-up', 'store')->name('accounts.top_up.store');
             });
         });
     });

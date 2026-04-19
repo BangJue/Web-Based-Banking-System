@@ -48,6 +48,7 @@ return new class extends Migration
 
             $table->index(['loan_id', 'paid_at']);
         });
+
     }
 
     public function down(): void

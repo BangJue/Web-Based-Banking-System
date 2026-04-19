@@ -127,7 +127,7 @@ class DashboardController extends Controller
             ->groupBy('type')
             ->get();
 
-        return view('dashboard.admin', compact(
+        return view('admin.dashboard.admin', compact(
             'stats',
             'dailyTransactions',
             'pendingLoans',

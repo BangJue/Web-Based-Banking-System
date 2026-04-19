@@ -28,20 +28,31 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        // 2. Coba login (Attempt)
-        // remember adalah fitur 'Keep me signed in' yang ada di blade kita tadi
         $remember = $request->has('remember');
 
+        // 2. Coba login (Attempt)
         if (Auth::attempt($credentials, $remember)) {
-            // Regenerate session untuk keamanan (mencegah session fixation)
+            // Regenerate session untuk keamanan
             $request->session()->regenerate();
 
-            // Redirect ke dashboard atau halaman yang dituju sebelumnya
+            // AMBIL DATA USER
+            $user = Auth::user();
+
+            // 3. LOGIKA REDIRECT BERDASARKAN ROLE
+            // Jika role adalah admin, arahkan ke dashboard admin
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard')
+                    ->with('success', 'Portal Admin Terverifikasi. Selamat bekerja, ' . $user->name . '!');
+            }
+
+            // Jika nasabah biasa, arahkan ke dashboard user
+            // Menggunakan intended() agar jika user sebelumnya mencoba akses fitur tertentu, 
+            // dia akan dikembalikan ke halaman tersebut.
             return redirect()->intended(route('dashboard'))
-                ->with('success', 'Selamat datang kembali, ' . Auth::user()->name . '!');
+                ->with('success', 'Selamat datang kembali, ' . $user->name . '!');
         }
 
-        // 3. Jika gagal, lempar error ke form
+        // 4. Jika gagal, lempar error ke form
         throw ValidationException::withMessages([
             'email' => ['Kredensial yang Anda berikan tidak cocok dengan data kami.'],
         ]);
@@ -54,6 +65,7 @@ class LoginController extends Controller
     {
         Auth::logout();
 
+        // Bersihkan session sepenuhnya
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
