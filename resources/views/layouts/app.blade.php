@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') | IBN Premium</title>
+    <title>@yield('title') | INB Premium</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -108,7 +108,7 @@
                         <i class="fa-solid fa-bars-staggered"></i>
                     </button>
                     <div>
-                        <h2 class="text-xl font-black text-black">IBN <span class="text-blue-600">Portal</span></h2>
+                        <h2 class="text-xl font-black text-black">INB <span class="text-blue-600">Portal</span></h2>
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5">Premium Interface v2.0</p>
                     </div>
                 </div>
@@ -139,7 +139,7 @@
 
             <footer class="mt-auto py-8 px-10 border-t border-gray-200/50">
                 <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">&copy; 2026 IBN Digital Ecosystem.</p>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">&copy; 2026 INB Digital Ecosystem.</p>
                     <div class="flex gap-6">
                         <a href="#" class="text-[10px] font-black text-gray-500 hover:text-blue-600 uppercase tracking-widest transition-colors">Syarat & Ketentuan</a>
                         <a href="#" class="text-[10px] font-black text-gray-500 hover:text-blue-600 uppercase tracking-widest transition-colors">Privasi</a>

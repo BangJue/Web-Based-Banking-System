@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | IBN Premium</title>
+    <title>Login | INB Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -52,7 +52,7 @@
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
                     <i class="fa-solid fa-building-columns text-sm"></i>
                 </div>
-                <span class="font-bold text-xl text-black">IBN</span>
+                <span class="font-bold text-xl text-black">INB</span>
             </div>
 
             <div class="w-full max-w-md space-y-8" 

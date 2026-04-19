@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Models\User; // Tambahkan ini
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +15,9 @@ class TransactionController extends Controller
      */
     public function index(Request $request)
     {
-        $accountIds = Auth::user()->accounts()->pluck('id');
+        /** @var User $user */
+        $user = Auth::user();
+        $accountIds = $user->accounts()->pluck('id');
 
         $transactions = Transaction::whereIn('account_id', $accountIds)
             ->with('account')
@@ -27,8 +30,8 @@ class TransactionController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        $userAccounts = Auth::user()->accounts()->get(['id', 'account_number', 'account_type']);
-        $types        = Transaction::whereIn('account_id', $accountIds)->distinct()->pluck('type');
+        $userAccounts = $user->accounts()->get(['id', 'account_number', 'account_type']);
+        $types = Transaction::whereIn('account_id', $accountIds)->distinct()->pluck('type');
 
         return view('transactions.index', compact('transactions', 'userAccounts', 'types'));
     }
@@ -88,7 +91,7 @@ class TransactionController extends Controller
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('transactions.receipt', compact('transaction'));
 
-        return $pdf->download('bukti-' . $transaction->reference_number . '.pdf');
+        return $pdf->download('bukti-' . ($transaction->reference_code ?? $transaction->id) . '.pdf');
     }
 
     // -------------------------------------------------------------------------
@@ -97,16 +100,22 @@ class TransactionController extends Controller
 
     private function authorizeTransaction(Transaction $transaction): void
     {
-        $userAccountIds = Auth::user()->accounts()->pluck('id');
+        /** @var User $user */
+        $user = Auth::user();
+        $userAccountIds = $user->accounts()->pluck('id');
 
-        if (!$userAccountIds->contains($transaction->account_id) && !Auth::user()->isAdmin()) {
+        // Pastikan model User memiliki method isAdmin() atau cek role
+        if (!$userAccountIds->contains($transaction->account_id) && $user->role !== 'admin') {
             abort(403, 'Akses ditolak.');
         }
     }
 
     private function authorizeAccount(Account $account): void
     {
-        if ($account->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if ($account->user_id !== $user->id && $user->role !== 'admin') {
             abort(403, 'Akses ditolak.');
         }
     }

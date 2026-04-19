@@ -1,0 +1,5 @@
+Features : 
+    Register and Login with Email Verifications✔
+    Top Up Saldo ✔
+    Loans ✔
+    Transaction (details,report,receipt,etc) ✔

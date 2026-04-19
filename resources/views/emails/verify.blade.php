@@ -23,7 +23,7 @@
 
         <div class="content">
             <h2 style="margin-top: 0;">Halo, {{ $user->name }}!</h2>
-            <p>Terima kasih telah memilih <strong>IBN Premium</strong> sebagai partner finansial Anda. Satu langkah lagi untuk mengaktifkan akun perbankan digital Anda.</p>
+            <p>Terima kasih telah memilih <strong>INB Premium</strong> sebagai partner finansial Anda. Satu langkah lagi untuk mengaktifkan akun perbankan digital Anda.</p>
             
             <p>Berikut adalah ringkasan pendaftaran Anda:</p>
             <div class="nik-box">
@@ -43,7 +43,7 @@
         </div>
 
         <div class="footer">
-            <p>&copy; 2026 IBN Premium. Seluruh Hak Cipta Dilindungi.<br>
+            <p>&copy; 2026 INB Premium. Seluruh Hak Cipta Dilindungi.<br>
             Ini adalah email otomatis, mohon tidak membalas email ini.</p>
         </div>
     </div>

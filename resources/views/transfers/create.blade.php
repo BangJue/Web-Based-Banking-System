@@ -5,7 +5,7 @@
     <div class="max-w-2xl mx-auto">
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-800">Transfer Uang</h1>
-            <p class="text-gray-500">Kirim dana antar rekening NexusBank dengan aman.</p>
+            <p class="text-gray-500">Kirim dana antar rekening INB dengan aman.</p>
         </div>
 
         <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-gray-100">

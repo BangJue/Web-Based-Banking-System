@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
     {
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
         return (new MailMessage)
-            ->subject('Verifikasi Akun NexusBank')
+            ->subject('Verifikasi Akun Indonesia National Bank')
             ->view('emails.verify', ['url' => $url, 'user' => $notifiable]);
     });
     }

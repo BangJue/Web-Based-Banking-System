@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Loan;
 use App\Models\LoanPayment;
 use App\Models\Transaction;
+use App\Models\User; // Tambahkan import User
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,9 @@ class LoanController extends Controller
      */
     public function index(Request $request)
     {
-        $accountIds = Auth::user()->accounts()->pluck('id');
+        /** @var User $user */
+        $user = Auth::user();
+        $accountIds = $user->accounts()->pluck('id');
 
         $loans = Loan::whereIn('account_id', $accountIds)
             ->with('account')
@@ -35,12 +38,16 @@ class LoanController extends Controller
      */
     public function create()
     {
-        $accounts = Auth::user()->accounts()
+        /** @var User $user */
+        $user = Auth::user();
+        
+        // Sesuaikan nama variabel menjadi userAccounts agar sinkron dengan Blade
+        $userAccounts = $user->accounts()
             ->where('status', 'active')
             ->where('account_type', 'tabungan')
             ->get();
 
-        return view('loans.create', compact('accounts'));
+        return view('loans.create', compact('userAccounts'));
     }
 
     /**
@@ -167,7 +174,6 @@ class LoanController extends Controller
             return back()->with('error', 'Saldo tidak mencukupi untuk membayar cicilan Rp ' . number_format($amount, 0, ',', '.'));
         }
 
-        // Hitung porsi pokok & bunga (flat)
         $totalInterest   = $loan->total_debt - $loan->principal;
         $interestPerMonth = (int) ceil($totalInterest / $loan->tenor_months);
         $principalPerMonth = $amount - $interestPerMonth;
@@ -211,7 +217,7 @@ class LoanController extends Controller
         });
 
         $message = $loan->fresh()->isPaidOff()
-            ? '🎉 Selamat! Pinjaman kamu sudah LUNAS.'
+            ? '🎉 Selamat! Pinjaman kamu sudah LUNAS di Indonesia National Bank.'
             : 'Cicilan ke-' . $loan->fresh()->paid_installments . ' berhasil dibayar.';
 
         return redirect()->route('loans.show', $loan)->with('success', $message);
@@ -222,7 +228,10 @@ class LoanController extends Controller
      */
     public function approve(Request $request, Loan $loan)
     {
-        if (!Auth::user()->isAdmin()) {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
             abort(403);
         }
 
@@ -237,14 +246,13 @@ class LoanController extends Controller
             $account->increment('balance', $loan->principal);
             $account->refresh();
 
-            // Catat transaksi pencairan
             Transaction::create([
                 'account_id'       => $account->id,
                 'type'             => Transaction::TYPE_LOAN_DISBURSE,
                 'amount'           => $loan->principal,
                 'balance_before'   => $balanceBefore,
                 'balance_after'    => $account->balance,
-                'description'      => 'Pencairan pinjaman - ' . $loan->purpose,
+                'description'      => 'Pencairan pinjaman INB - ' . $loan->purpose,
                 'reference_number' => $this->generateRefCode('LNS'),
                 'status'           => 'success',
             ]);
@@ -256,7 +264,7 @@ class LoanController extends Controller
             ]);
         });
 
-        return back()->with('success', 'Pinjaman disetujui dan dana telah dicairkan ke rekening.');
+        return back()->with('success', 'Pinjaman disetujui dan dana telah dicairkan ke rekening INB nasabah.');
     }
 
     /**
@@ -264,7 +272,10 @@ class LoanController extends Controller
      */
     public function reject(Request $request, Loan $loan)
     {
-        if (!Auth::user()->isAdmin()) {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
             abort(403);
         }
 
@@ -281,7 +292,7 @@ class LoanController extends Controller
             'rejection_reason' => $request->rejection_reason,
         ]);
 
-        return back()->with('success', 'Pinjaman ditolak.');
+        return back()->with('success', 'Pinjaman telah ditolak oleh sistem INB.');
     }
 
     // -------------------------------------------------------------------------
@@ -290,9 +301,11 @@ class LoanController extends Controller
 
     private function authorizeLoan(Loan $loan): void
     {
-        $userAccountIds = Auth::user()->accounts()->pluck('id');
+        /** @var User $user */
+        $user = Auth::user();
+        $userAccountIds = $user->accounts()->pluck('id');
 
-        if (!$userAccountIds->contains($loan->account_id) && !Auth::user()->isAdmin()) {
+        if (!$userAccountIds->contains($loan->account_id) && $user->role !== 'admin') {
             abort(403, 'Akses ditolak.');
         }
     }
