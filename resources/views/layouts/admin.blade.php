@@ -79,7 +79,7 @@
                 </a>
 
                 <p class="px-4 text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mt-8 mb-4">Akun Saya</p>
-                <a href="{{ route('profile.show') }}" class="flex items-center gap-4 p-4 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all">
+                <a href="{{ route('admin.profile.show') }}" class="flex items-center gap-4 p-4 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all">
                     <i class="fa-solid fa-user-shield text-lg"></i>
                     <span class="font-bold">Profil Admin</span>
                 </a>

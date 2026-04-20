@@ -95,9 +95,6 @@
                                 <a href="{{ route('admin.users.show', $u->id) }}" class="p-2 bg-gray-50 text-gray-400 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all" title="Detail User">
                                     <i class="fas fa-eye text-xs"></i>
                                 </a>
-                                <a href="{{ route('admin.users.edit', $u->id) }}" class="p-2 bg-gray-50 text-gray-400 rounded-xl hover:bg-yellow-50 hover:text-yellow-600 transition-all" title="Edit Data">
-                                    <i class="fas fa-edit text-xs"></i>
-                                </a>
                             </div>
                         </td>
                     </tr>

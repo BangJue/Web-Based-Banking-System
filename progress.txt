@@ -5,9 +5,7 @@ Features :
     Transaction (details,report,receipt,etc) ✔
 
 Features Still Ongoing: 
-    Manajemen Tagihan / Bills Admin
-    Profil Admin dan User 
-    Bills User
+    Manajemen Tagihan / Bills Admin dan User
     Saving Books
 
 Need to Fixed :

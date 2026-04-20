@@ -15,6 +15,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\Admin\AdminLoanController;
 use App\Http\Controllers\Admin\AdminBillController;
+use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 
@@ -135,14 +136,13 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ── Profil ──────────────────────────────────────────────
-        Route::controller(ProfileController::class)->group(function () {
-            Route::get('profile', 'show')->name('profile.show');
-            Route::get('profile/edit', 'edit')->name('profile.edit');
-            Route::put('profile', 'update')->name('profile.update');
-            Route::get('profile/password', 'editPassword')->name('profile.password');
-            Route::put('profile/password', 'updatePassword')->name('profile.password.update');
-            Route::delete('profile/photo', 'deletePhoto')->name('profile.photo.delete');
-        });
+        Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+        // Halaman Form Edit
+        Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+        // Proses Update Data (PATCH/PUT)
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        // Opsional: Proses Update Password
+        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
         // ============================================================
         // Admin Area (Khusus Role Admin & Sudah Verifikasi)
@@ -150,12 +150,10 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('admin')->name('admin.')->group(function () {
             
             // 1. Dashboard (Folder: views/admin/dashboard/admin.blade.php)
-            // Sesuaikan di DashboardController agar return view('admin.dashboard.admin')
             Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
             // 2. Manajemen Users (Folder: views/admin/users)
-            // Sesuai gambar: index.blade.php & show.blade.php
-           Route::patch('users/{user}/toggle-active', [AdminUserController::class, 'toggleActive'])->name('users.toggle_active');
+            Route::patch('users/{user}/toggle-active', [AdminUserController::class, 'toggleActive'])->name('users.toggle_active');
             Route::post('users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('users.reset_password');
             Route::resource('users', AdminUserController::class);
             Route::get('accounts', [AdminUserController::class, 'accounts'])->name('accounts.index');
@@ -169,12 +167,13 @@ Route::middleware(['auth'])->group(function () {
             Route::resource('bills', AdminBillController::class)->except(['edit', 'update', 'show']);
 
             // 5. Manajemen Pinjaman / Loans (Folder: views/admin/loans)
-           Route::get('/loans', [AdminLoanController::class, 'index'])->name('loans.index');
+            Route::get('/loans', [AdminLoanController::class, 'index'])->name('loans.index');
             Route::get('/loans/{loan}', [AdminLoanController::class, 'show'])->name('loans.show');
-            // Rute Khusus Aksi Approve dan Reject
-            // Gunakan PATCH agar sesuai dengan form di Blade
             Route::patch('/loans/{loan}/approve', [AdminLoanController::class, 'approve'])->name('loans.approve');
             Route::patch('/loans/{loan}/reject', [AdminLoanController::class, 'reject'])->name('loans.reject');
+
+            // 5. Profile Admin)
+            Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile.show');
         });
     });
 });
