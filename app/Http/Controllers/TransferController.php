@@ -14,9 +14,6 @@ use Illuminate\Validation\Rule;
 
 class TransferController extends Controller
 {
-    /**
-     * Form transfer uang.
-     */
     public function create()
     {
         /** @var User $user */
@@ -26,9 +23,6 @@ class TransferController extends Controller
         return view('transfers.create', compact('accounts'));
     }
 
-    /**
-     * Cek rekening tujuan (AJAX).
-     */
     public function checkDestination(Request $request)
     {
         $request->validate([
@@ -41,7 +35,9 @@ class TransferController extends Controller
             ->first();
 
         if (!$destination) {
-            return response()->json(['error' => 'Rekening tujuan tidak ditemukan atau tidak aktif.'], 404);
+            return response()->json([
+                'error' => 'Rekening tujuan tidak ditemukan atau tidak aktif.'
+            ], 404);
         }
 
         return response()->json([
@@ -50,9 +46,6 @@ class TransferController extends Controller
         ]);
     }
 
-    /**
-     * Proses transfer.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -77,12 +70,11 @@ class TransferController extends Controller
             return back()->with('error', 'Tidak dapat transfer ke rekening sendiri.');
         }
 
-        // Pastikan model Account memiliki field pin
         if (!Hash::check($request->pin, $fromAccount->pin)) {
             return back()->withErrors(['pin' => 'PIN tidak sesuai.'])->withInput();
         }
 
-        $adminFee = 2500; // Contoh biaya statis, atau ambil dari Transfer::ADMIN_FEES
+        $adminFee = 2500;
         $total    = $request->amount + $adminFee;
 
         if ($fromAccount->balance < $total) {
@@ -90,48 +82,50 @@ class TransferController extends Controller
         }
 
         DB::transaction(function () use ($fromAccount, $toAccount, $request, $adminFee, $total) {
+
+            // 🔒 Lock biar aman dari race condition
+            $fromAccount = Account::where('id', $fromAccount->id)->lockForUpdate()->first();
+            $toAccount   = Account::where('id', $toAccount->id)->lockForUpdate()->first();
+
             $ref = $this->generateRefCode('TRF');
 
-            // 1. Rekening Pengirim (Debit)
+            // 1. Debit pengirim
             $balanceBeforeOut = $fromAccount->balance;
             $fromAccount->decrement('balance', $total);
-            
+
             $txOut = Transaction::create([
-                'account_id'       => $fromAccount->id,
-                'type'             => 'transfer_out',
-                'amount'           => $total,
-                'balance_before'   => $balanceBeforeOut,
-                'balance_after'    => $fromAccount->fresh()->balance,
-                'description'      => 'Transfer ke ' . $toAccount->account_number . ' (' . $request->note . ')',
-                'reference_code'   => $ref, // Sesuaikan kolom DB Anda
-                'status'           => 'success',
+                'account_id'        => $fromAccount->id,
+                'type'              => 'transfer_out',
+                'amount'            => $total,
+                'balance_before'    => $balanceBeforeOut,
+                'balance_after'     => $fromAccount->fresh()->balance,
+                'description'       => 'Transfer ke ' . $toAccount->account_number . ' (' . $request->note . ')',
+                'reference_number'  => $ref, // ✅ FIX DI SINI
             ]);
 
-            // 2. Rekening Penerima (Kredit)
+            // 2. Kredit penerima
             $balanceBeforeIn = $toAccount->balance;
             $toAccount->increment('balance', $request->amount);
 
             Transaction::create([
-                'account_id'       => $toAccount->id,
-                'type'             => 'transfer_in',
-                'amount'           => $request->amount,
-                'balance_before'   => $balanceBeforeIn,
-                'balance_after'    => $toAccount->fresh()->balance,
-                'description'      => 'Transfer masuk dari ' . $fromAccount->account_number,
-                'reference_code'   => $ref,
-                'status'           => 'success',
+                'account_id'        => $toAccount->id,
+                'type'              => 'transfer_in',
+                'amount'            => $request->amount,
+                'balance_before'    => $balanceBeforeIn,
+                'balance_after'     => $toAccount->fresh()->balance,
+                'description'       => 'Transfer masuk dari ' . $fromAccount->account_number,
+                'reference_number'  => $ref, // ✅ FIX DI SINI
             ]);
 
-            // 3. Detail Transfer
+            // 3. Simpan detail transfer
             Transfer::create([
-                'transaction_id'  => $txOut->id,
+                'transaction_id'   => $txOut->id,
                 'from_account_id' => $fromAccount->id,
                 'to_account_id'   => $toAccount->id,
                 'amount'          => $request->amount,
                 'admin_fee'       => $adminFee,
                 'method'          => $request->method,
                 'note'            => $request->note,
-                'status'          => 'success',
             ]);
         });
 
@@ -157,7 +151,7 @@ class TransferController extends Controller
     {
         do {
             $code = $prefix . strtoupper(substr(uniqid(), -8));
-        } while (Transaction::where('reference_code', $code)->exists());
+        } while (Transaction::where('reference_number', $code)->exists()); // ✅ FIX DI SINI
 
         return $code;
     }

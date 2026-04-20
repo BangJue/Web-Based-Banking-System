@@ -4,7 +4,12 @@ Features :
     Loans ✔
     Transaction (details,report,receipt,etc) ✔
 
+Features Still Ongoing: 
+    Manajemen Tagihan / Bills Admin
+    Profil Admin dan User 
+    Bills User
+    Saving Books
+
 Need to Fixed :
     Dashboard admin persetujuan pinjaman baru detail dan jumlah pinjaman tidak muncul.
     Detail Pinjaman tidak muncul jumlah,alasan,dll.
-    Rejet pinjaman redirect ke loans users bukan admin.

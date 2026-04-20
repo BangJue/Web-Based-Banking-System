@@ -12,14 +12,6 @@
                 <p class="text-gray-500 text-sm font-medium">Informasi mendalam akun ID: #USR-{{ str_pad($user->id, 4, '0', STR_PAD_LEFT) }}</p>
             </div>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="{{ route('admin.users.edit', $user->id) }}" class="bg-yellow-500 text-white px-5 py-2.5 rounded-2xl font-bold shadow-lg shadow-yellow-100 hover:bg-yellow-600 transition-all text-sm">
-                <i class="fas fa-edit mr-2"></i> Edit Data
-            </a>
-            <button onclick="document.getElementById('reset-password-modal').classList.remove('hidden')" class="bg-gray-800 text-white px-5 py-2.5 rounded-2xl font-bold shadow-lg shadow-gray-200 hover:bg-black transition-all text-sm">
-                <i class="fas fa-key mr-2"></i> Reset Password
-            </button>
-        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

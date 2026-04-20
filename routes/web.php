@@ -13,6 +13,8 @@ use App\Http\Controllers\SavingsBookController;
 use App\Http\Controllers\TopUpController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
+use App\Http\Controllers\Admin\AdminLoanController;
+use App\Http\Controllers\Admin\AdminBillController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 
@@ -153,26 +155,26 @@ Route::middleware(['auth'])->group(function () {
 
             // 2. Manajemen Users (Folder: views/admin/users)
             // Sesuai gambar: index.blade.php & show.blade.php
-            Route::resource('users', AdminUserController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
+           Route::patch('users/{user}/toggle-active', [AdminUserController::class, 'toggleActive'])->name('users.toggle_active');
+            Route::post('users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('users.reset_password');
+            Route::resource('users', AdminUserController::class);
+            Route::get('accounts', [AdminUserController::class, 'accounts'])->name('accounts.index');
 
             // 3. Manajemen Accounts & Top Up (Folder: views/admin/accounts)
-            // Sesuai gambar: top_up.blade.php
             Route::get('accounts', [AdminUserController::class, 'accounts'])->name('accounts.index');
             Route::get('accounts/{account}/top-up', [TopUpController::class, 'create'])->name('accounts.top_up');
             Route::post('accounts/{account}/top-up', [TopUpController::class, 'store'])->name('accounts.top_up.store');
 
             // 4. Manajemen Tagihan / Bills (Folder: views/admin/bills)
-            // Sesuai gambar: index.blade.php & create.blade.php
-            Route::resource('bills', BillController::class);
+            Route::resource('bills', AdminBillController::class)->except(['edit', 'update', 'show']);
 
             // 5. Manajemen Pinjaman / Loans (Folder: views/admin/loans)
-            // Sesuai gambar: index.blade.php (Belum ada show.blade.php)
-           Route::controller(LoanController::class)->group(function () {
-                Route::get('loans', 'index')->name('loans.index'); 
-                Route::get('loans/{loan}', 'show')->name('loans.show'); 
-                Route::post('loans/{loan}/approve', 'approve')->name('loans.approve');
-                Route::post('loans/{loan}/reject', 'reject')->name('loans.reject');
-            });
+           Route::get('/loans', [AdminLoanController::class, 'index'])->name('loans.index');
+            Route::get('/loans/{loan}', [AdminLoanController::class, 'show'])->name('loans.show');
+            // Rute Khusus Aksi Approve dan Reject
+            // Gunakan PATCH agar sesuai dengan form di Blade
+            Route::patch('/loans/{loan}/approve', [AdminLoanController::class, 'approve'])->name('loans.approve');
+            Route::patch('/loans/{loan}/reject', [AdminLoanController::class, 'reject'])->name('loans.reject');
         });
     });
 });

@@ -13,7 +13,7 @@ class Transfer extends Model
     const METHOD_ONLINE = 'online';
     const METHOD_RTGS   = 'rtgs';
     const METHOD_SKNBI  = 'sknbi';
-    const METHOD_BIFAST = 'bifast';
+    const METHOD_BIFAST = 'bi_fast';
 
     const ADMIN_FEES = [
         self::METHOD_ONLINE => 0,
@@ -30,19 +30,13 @@ class Transfer extends Model
         'admin_fee',
         'method',
         'note',
+        'status',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'amount'    => 'integer',
-            'admin_fee' => 'integer',
-        ];
-    }
-
-    // -------------------------------------------------------------------------
-    // Relationships
-    // -------------------------------------------------------------------------
+    protected $casts = [
+        'amount'    => 'integer',
+        'admin_fee' => 'integer',
+    ];
 
     public function transaction(): BelongsTo
     {
@@ -58,10 +52,6 @@ class Transfer extends Model
     {
         return $this->belongsTo(Account::class, 'to_account_id');
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers / Accessors
-    // -------------------------------------------------------------------------
 
     public function getTotalAmountAttribute(): int
     {

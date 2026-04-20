@@ -31,7 +31,6 @@ class TopUpController extends Controller
         ]);
 
         $account = Account::findOrFail($request->account_id);
-        /** @var User $user */
         $user = Auth::user();
 
         if ($account->user_id !== $user->id && $user->role !== 'admin') {
@@ -39,33 +38,45 @@ class TopUpController extends Controller
         }
 
         DB::transaction(function () use ($account, $request) {
+
             $balanceBefore = $account->balance;
             $account->increment('balance', $request->amount);
             $account->refresh();
 
-            // 1. Simpan ke tabel TRANSACTIONS
+            $ref = $request->reference_code ?? $this->generateRefCode('TOP');
+
+            // ✅ FIX DI SINI
             $tx = Transaction::create([
                 'account_id'       => $account->id,
-                'type'             => 'top_up', 
+                'type'             => 'top_up',
                 'amount'           => $request->amount,
                 'balance_before'   => $balanceBefore,
                 'balance_after'    => $account->balance,
                 'description'      => 'Top up via ' . $request->source,
                 'status'           => 'success',
-                'reference_code'   => $request->reference_code ?? '-', // Kolom ini ada di tabel transactions
+                'reference_number' => $ref,
             ]);
 
-            // 2. Simpan ke tabel TOP_UPS (Sesuaikan nama kolom DB)
             TopUp::create([
                 'transaction_id' => $tx->id,
                 'account_id'     => $account->id,
                 'amount'         => $request->amount,
-                'channel'        => $request->source,         // DI DB: channel
-                'reference'      => $request->reference_code, // DI DB: reference
+                'channel'        => $request->source,
+                'reference'      => $request->reference_code,
                 'status'         => 'success',
             ]);
         });
 
         return redirect()->route('dashboard')->with('success', 'Top Up Berhasil!');
+    }
+
+    // 🔥 Tambahin ini biar konsisten sama Transfer
+    private function generateRefCode(string $prefix): string
+    {
+        do {
+            $code = $prefix . strtoupper(substr(uniqid(), -8));
+        } while (Transaction::where('reference_number', $code)->exists());
+
+        return $code;
     }
 }
