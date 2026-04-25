@@ -82,6 +82,11 @@
                     <i class="fa-solid fa-hand-holding-dollar text-lg"></i>
                     <span class="font-bold">Pinjaman Aman</span>
                 </a>
+
+                <a href="{{ route('bills.index') }}" class="flex items-center gap-4 p-4 rounded-xl transition-all duration-300 {{ request()->routeIs('loans.*') ? 'active-link' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                    <i class="fa-solid fa-receipt text-lg"></i>
+                    <span class="font-bold">Bayar Tagihan</span>
+                </a>
             </nav>
 
             <div class="p-6">

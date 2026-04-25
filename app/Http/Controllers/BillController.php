@@ -3,127 +3,85 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bill;
+use App\Models\Account;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class BillController extends Controller
 {
-    public function __construct()
+    public function index()
     {
-        // CRUD tagihan hanya untuk admin, kecuali index (user bisa lihat)
-        $this->middleware(function ($request, $next) {
-            if (!in_array($request->route()->getActionMethod(), ['index']) && !auth()->user()->isAdmin()) {
-                abort(403, 'Hanya admin yang dapat mengelola tagihan.');
-            }
-            return $next($request);
-        });
+        $bills = Bill::active()->get();
+        return view('bills.index', compact('bills'));
     }
 
-    private const CATEGORIES = ['listrik', 'air', 'telepon', 'internet', 'bpjs', 'pajak', 'pendidikan', 'lainnya'];
-
-    /**
-     * Daftar tagihan aktif (bisa diakses user untuk memilih tagihan).
-     */
-    public function index(Request $request)
+    public function show(Bill $bill)
     {
-        $bills = Bill::query()
-            ->when($request->category, fn($q) => $q->where('category', $request->category))
-            ->when($request->search, fn($q) => $q->where('bill_name', 'like', '%' . $request->search . '%')
-                ->orWhere('bill_code', 'like', '%' . $request->search . '%'))
-            ->when(!auth()->user()->isAdmin(), fn($q) => $q->active())
-            ->orderBy('category')
-            ->orderBy('bill_name')
-            ->get()
-            ->groupBy('category');
-
-        $categories = collect(self::CATEGORIES);
-
-        return view('bills.index', compact('bills', 'categories'));
-    }
-
-    /**
-     * Form tambah tagihan (Admin).
-     */
-    public function create()
-    {
-        $categories = self::CATEGORIES;
-
-        return view('bills.create', compact('categories'));
-    }
-
-    /**
-     * Simpan tagihan baru (Admin).
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'bill_code' => ['required', 'string', 'max:20', 'unique:bills,bill_code'],
-            'bill_name' => ['required', 'string', 'max:255'],
-            'category'  => ['required', Rule::in(self::CATEGORIES)],
-            'icon'      => ['nullable', 'string', 'max:255'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
-
-        Bill::create([
-            'bill_code' => strtoupper($request->bill_code),
-            'bill_name' => $request->bill_name,
-            'category'  => $request->category,
-            'icon'      => $request->icon,
-            'is_active' => $request->boolean('is_active', true),
-        ]);
-
-        return redirect()->route('admin.bills.index')
-            ->with('success', 'Tagihan ' . $request->bill_name . ' berhasil ditambahkan.');
-    }
-
-    /**
-     * Form edit tagihan (Admin).
-     */
-    public function edit(Bill $bill)
-    {
-        $categories = self::CATEGORIES;
-
-        return view('bills.edit', compact('bill', 'categories'));
-    }
-
-    /**
-     * Update tagihan (Admin).
-     */
-    public function update(Request $request, Bill $bill)
-    {
-        $request->validate([
-            'bill_code' => ['required', 'string', 'max:20', Rule::unique('bills', 'bill_code')->ignore($bill->id)],
-            'bill_name' => ['required', 'string', 'max:255'],
-            'category'  => ['required', Rule::in(self::CATEGORIES)],
-            'icon'      => ['nullable', 'string', 'max:255'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
-
-        $bill->update([
-            'bill_code' => strtoupper($request->bill_code),
-            'bill_name' => $request->bill_name,
-            'category'  => $request->category,
-            'icon'      => $request->icon,
-            'is_active' => $request->boolean('is_active', $bill->is_active),
-        ]);
-
-        return redirect()->route('admin.bills.index')
-            ->with('success', 'Tagihan berhasil diperbarui.');
-    }
-
-    /**
-     * Nonaktifkan tagihan (soft delete — Admin).
-     */
-    public function destroy(Bill $bill)
-    {
-        if ($bill->payments()->exists()) {
-            // Ada riwayat pembayaran — nonaktifkan saja, jangan hapus
-            $bill->update(['is_active' => false]);
-            return back()->with('success', 'Tagihan dinonaktifkan karena memiliki riwayat pembayaran.');
+        if (!$bill->is_active) {
+            return redirect()->route('bills.index');
         }
 
-        $bill->delete();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $accounts = $user->accounts;
 
-        return back()->with('success', 'Tagihan berhasil dihapus.');
+        return view('bills.pay', compact('bill', 'accounts'));
+    }
+
+    // TAMBAHKAN FUNGSI INI
+    public function pay(Request $request, Bill $bill)
+    {
+        $request->validate([
+            'account_id'      => 'required|exists:accounts,id',
+            'customer_number' => 'required|string|min:5',
+            'amount'          => 'required|numeric|min:1000',
+        ]);
+
+        $account = Account::where('id', $request->account_id)
+                          ->where('user_id', Auth::id())
+                          ->firstOrFail();
+
+        if ($account->balance < $request->amount) {
+            return back()->withErrors(['amount' => 'Saldo tidak mencukupi.'])->withInput();
+        }
+
+       //2. Proses Transaksi
+            // 2. Proses Transaksi
+        DB::transaction(function () use ($account, $bill, $request) {
+            // Ambil saldo sebelum dipotong untuk audit trail
+            $balanceBefore = $account->balance;
+
+            // A. Potong Saldo Rekening
+            $account->decrement('balance', $request->amount);
+            
+            // Ambil saldo setelah dipotong
+            $balanceAfter = $account->balance;
+
+            // B. Buat Record di Tabel Transaksi Utama
+            $transaction = \App\Models\Transaction::create([
+                'user_id'          => Auth::id(),
+                'account_id'       => $account->id,
+                'amount'           => $request->amount,
+                'type'             => 'withdrawal',
+                'description'      => 'Pembayaran Tagihan ' . $bill->bill_name,
+                'status'           => 'success',
+                'reference_number' => 'TRX-' . strtoupper(str()->random(12)),
+                // TAMBAHKAN KOLOM AUDIT INI:
+                'balance_before'   => $balanceBefore,
+                'balance_after'    => $balanceAfter, // Jika ada kolom 'balance_after', masukkan juga
+            ]);
+
+            // C. Simpan ke Riwayat Tagihan
+            $bill->payments()->create([
+                'user_id'         => Auth::id(),
+                'account_id'      => $account->id,
+                'customer_number' => $request->customer_number,
+                'amount'          => $request->amount,
+                'status'          => 'success',
+                'transaction_id'  => $transaction->id,
+            ]);
+        });
+        return redirect()->route('bills.index')->with('success', 'Pembayaran ' . $bill->bill_name . ' berhasil disimpan!');
     }
 }

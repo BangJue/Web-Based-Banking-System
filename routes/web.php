@@ -105,14 +105,9 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ── Tagihan ─────────────────────────────────────────────
-        Route::get('bills', [BillController::class, 'index'])->name('bills.index');
-        Route::controller(BillPaymentController::class)->group(function () {
-            Route::post('bill-payments/inquiry', 'inquiry')->name('bill_payments.inquiry');
-            Route::get('bills/{bill}/pay', 'create')->name('bill_payments.create');
-            Route::post('bill-payments', 'store')->name('bill_payments.store');
-            Route::get('bill-payments/history', 'history')->name('bill_payments.history');
-            Route::get('bill-payments/{billPayment}', 'show')->name('bill_payments.show');
-        });
+            Route::get('/bills', [BillController::class, 'index'])->name('bills.index');
+            Route::get('/bills/{bill}/pay', [BillController::class, 'show'])->name('bills.pay');
+            Route::post('/bills/{bill}/pay', [BillController::class, 'pay'])->name('bills.process');
 
         // ── Pinjaman ────────────────────────────────────────────
         // --- AREA NASABAH (USER) ---
@@ -137,12 +132,6 @@ Route::middleware(['auth'])->group(function () {
 
         // ── Profil ──────────────────────────────────────────────
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
-        // Halaman Form Edit
-        Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-        // Proses Update Data (PATCH/PUT)
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        // Opsional: Proses Update Password
-        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
         // ============================================================
         // Admin Area (Khusus Role Admin & Sudah Verifikasi)
@@ -174,6 +163,9 @@ Route::middleware(['auth'])->group(function () {
 
             // 5. Profile Admin)
             Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile.show');
+
+            // 6. Bills
+            Route::resource('bills', AdminBillController::class);
         });
     });
 });
