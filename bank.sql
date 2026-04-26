@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 19, 2026 at 03:49 AM
+-- Generation Time: Apr 26, 2026 at 10:35 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.26
 
@@ -46,8 +46,8 @@ CREATE TABLE `accounts` (
 --
 
 INSERT INTO `accounts` (`id`, `user_id`, `account_number`, `account_type`, `balance`, `currency`, `status`, `pin`, `opened_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'INB8913410571', 'tabungan', 47499, 'IDR', 'active', '$2y$12$aswzs9HJXImIRwWlexQs3OYz/osZJjWZKG43I1i7xQJwNHfq06DDK', '2026-04-17 00:45:00', '2026-04-17 00:45:00', '2026-04-17 21:21:43'),
-(2, 2, 'INB9695636285', 'tabungan', 10000, 'IDR', 'active', '$2y$12$cm6AMAln40t/s/rDyWTrDet1QioCh8OtyMcmJgrMbRUg8axZMyEwu', '2026-04-17 21:01:52', '2026-04-17 21:01:52', '2026-04-17 21:21:43');
+(1, 1, 'INB8913410571', 'tabungan', 2852498, 'IDR', 'active', '$2y$12$aswzs9HJXImIRwWlexQs3OYz/osZJjWZKG43I1i7xQJwNHfq06DDK', '2026-04-17 00:45:00', '2026-04-17 00:45:00', '2026-04-26 03:22:14'),
+(2, 2, 'INB9695636285', 'tabungan', 1119999, 'IDR', 'active', '$2y$12$cm6AMAln40t/s/rDyWTrDet1QioCh8OtyMcmJgrMbRUg8axZMyEwu', '2026-04-17 21:01:52', '2026-04-17 21:01:52', '2026-04-20 05:58:24');
 
 -- --------------------------------------------------------
 
@@ -65,6 +65,13 @@ CREATE TABLE `bills` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `bills`
+--
+
+INSERT INTO `bills` (`id`, `bill_code`, `bill_name`, `category`, `icon`, `is_active`, `created_at`, `updated_at`) VALUES
+(2, 'BILL-U8FPBG', 'PLN', 'listrik', 'fas fa-file-invoice', 1, '2026-04-25 00:40:18', '2026-04-25 00:42:00');
 
 -- --------------------------------------------------------
 
@@ -86,6 +93,13 @@ CREATE TABLE `bill_payments` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `bill_payments`
+--
+
+INSERT INTO `bill_payments` (`id`, `transaction_id`, `account_id`, `bill_id`, `customer_number`, `customer_name`, `amount`, `admin_fee`, `period`, `status`, `created_at`, `updated_at`) VALUES
+(1, 35, 1, 2, '123213132', NULL, 50000, 0, NULL, 'success', '2026-04-25 00:49:24', '2026-04-25 00:49:24');
 
 -- --------------------------------------------------------
 
@@ -202,7 +216,12 @@ CREATE TABLE `loans` (
 --
 
 INSERT INTO `loans` (`id`, `account_id`, `principal`, `interest_rate`, `tenor_months`, `monthly_installment`, `total_debt`, `remaining_debt`, `paid_installments`, `status`, `purpose`, `rejection_reason`, `disbursed_at`, `due_date`, `created_at`, `updated_at`) VALUES
-(1, 1, 1000000, 12.00, 3, 343334, 1030000, 1030000, 0, 'pending', 'Modal buka toko', NULL, NULL, NULL, '2026-04-18 19:49:20', '2026-04-18 19:49:20');
+(1, 1, 1000000, 12.00, 3, 343334, 1030000, 0, 3, 'paid_off', 'Modal buka toko', NULL, '2026-04-19', '2026-05-19', '2026-04-18 19:49:20', '2026-04-20 05:50:32'),
+(2, 2, 1000000, 12.00, 3, 343334, 1030000, 1030000, 0, 'rejected', 'Modal Beli Laptop', 'mang eak', NULL, NULL, '2026-04-18 22:01:00', '2026-04-18 22:15:11'),
+(3, 2, 1000000, 12.00, 3, 343334, 1030000, 1030000, 0, 'rejected', 'Beli Rokok', '123', NULL, NULL, '2026-04-18 22:16:17', '2026-04-18 22:17:40'),
+(4, 2, 1000000, 12.00, 3, 343334, 1030000, 1030000, 0, 'active', 'Slot', NULL, '2026-04-20', '2026-07-20', '2026-04-18 22:18:53', '2026-04-20 05:58:24'),
+(5, 1, 4900000, 12.00, 3, 1682334, 5047000, 5047000, 0, 'rejected', 'Beli Rokok', 'tolak', NULL, NULL, '2026-04-20 05:50:56', '2026-04-20 05:56:50'),
+(6, 1, 1000000, 12.00, 3, 343334, 1030000, 1030000, 0, 'active', 'Beli Gas', NULL, '2026-04-26', '2026-07-26', '2026-04-26 03:22:05', '2026-04-26 03:22:14');
 
 -- --------------------------------------------------------
 
@@ -223,6 +242,15 @@ CREATE TABLE `loan_payments` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `loan_payments`
+--
+
+INSERT INTO `loan_payments` (`id`, `transaction_id`, `loan_id`, `amount`, `principal_paid`, `interest_paid`, `remaining_after`, `installment_number`, `paid_at`, `created_at`, `updated_at`) VALUES
+(1, 11, 1, 343334, 333334, 10000, 686666, 1, '2026-04-18 21:55:23', '2026-04-18 21:55:23', '2026-04-18 21:55:23'),
+(2, 12, 1, 343334, 333334, 10000, 343332, 2, '2026-04-18 21:56:17', '2026-04-18 21:56:17', '2026-04-18 21:56:17'),
+(3, 31, 1, 343334, 333334, 10000, 0, 3, '2026-04-20 05:50:32', '2026-04-20 05:50:32', '2026-04-20 05:50:32');
 
 -- --------------------------------------------------------
 
@@ -345,7 +373,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('aDZNwxnsTmRq88mv4XL5H6swhbkpRGT5c85ey6zr', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJyV1RmSEUybUU3dmxNMjJvTGRNU3BXV2h6b3IwSTZBMkpLMnR3QTlVIiwiX2ZsYXNoIjp7Im5ldyI6W10sIm9sZCI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2FkbWluXC9sb2Fuc1wvMSIsInJvdXRlIjoiYWRtaW4ubG9hbnMuc2hvdyJ9LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6M30=', 1776570469);
+('R8K9WdvplTXXKzMD78aYPTTEWZZUoRFCA3rT4mSC', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJQMlNmbXJjU0t5OVFLY0dNRGJ6QWw1OXUwUnMzYnVDNWpIT0pQM05TIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvbG9hbnMiLCJyb3V0ZSI6ImFkbWluLmxvYW5zLmluZGV4In0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjN9', 1777199311),
+('sZOxtwVxnW4k55slI3k3NQQ7uF0A4wJefJpYeDwX', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJsSk9EaVE3OWNKaGdrdzI3OWNlTUNncThiOWFkYk45RGI4ZmlRZXhTIiwidXJsIjpbXSwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9kYXNoYm9hcmQiLCJyb3V0ZSI6ImRhc2hib2FyZCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==', 1777199615);
 
 -- --------------------------------------------------------
 
@@ -371,7 +400,10 @@ CREATE TABLE `top_ups` (
 
 INSERT INTO `top_ups` (`id`, `transaction_id`, `account_id`, `amount`, `channel`, `reference`, `status`, `created_at`, `updated_at`) VALUES
 (1, 2, 1, 10000, 'mobile_banking', 'REF123', 'success', '2026-04-17 20:46:39', '2026-04-17 20:46:39'),
-(2, 3, 1, 49999, 'mobile_banking', 'REF124', 'success', '2026-04-17 21:18:43', '2026-04-17 21:18:43');
+(2, 3, 1, 49999, 'mobile_banking', 'REF124', 'success', '2026-04-17 21:18:43', '2026-04-17 21:18:43'),
+(3, 30, 1, 100000, 'mobile_banking', NULL, 'success', '2026-04-20 00:24:42', '2026-04-20 00:24:42'),
+(4, 33, 1, 1000000, 'minimarket', 'JUE12', 'success', '2026-04-25 00:28:12', '2026-04-25 00:28:12'),
+(5, 34, 1, 1000000, 'minimarket', 'JUE12', 'success', '2026-04-25 00:28:13', '2026-04-25 00:28:13');
 
 -- --------------------------------------------------------
 
@@ -381,6 +413,7 @@ INSERT INTO `top_ups` (`id`, `transaction_id`, `account_id`, `amount`, `channel`
 
 CREATE TABLE `transactions` (
   `id` bigint UNSIGNED NOT NULL,
+  `reference_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `account_id` bigint UNSIGNED NOT NULL,
   `related_account_id` bigint UNSIGNED DEFAULT NULL,
   `type` enum('transfer_in','transfer_out','top_up','withdrawal','bill_payment','va_payment','qr_payment','loan_disbursement','loan_payment') COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -399,11 +432,25 @@ CREATE TABLE `transactions` (
 -- Dumping data for table `transactions`
 --
 
-INSERT INTO `transactions` (`id`, `account_id`, `related_account_id`, `type`, `amount`, `balance_before`, `balance_after`, `reference_code`, `description`, `status`, `ip_address`, `created_at`, `updated_at`) VALUES
-(2, 1, NULL, 'top_up', 10000, 0, 10000, NULL, 'Top up via mobile_banking', 'success', NULL, '2026-04-17 20:46:39', '2026-04-17 20:46:39'),
-(3, 1, NULL, 'top_up', 49999, 10000, 59999, NULL, 'Top up via mobile_banking', 'success', NULL, '2026-04-17 21:18:43', '2026-04-17 21:18:43'),
-(8, 1, NULL, 'transfer_out', 12500, 59999, 47499, NULL, 'Transfer ke INB9695636285 (Buat Jajan)', 'success', NULL, '2026-04-17 21:21:43', '2026-04-17 21:21:43'),
-(9, 2, NULL, 'transfer_in', 10000, 0, 10000, NULL, 'Transfer masuk dari INB8913410571', 'success', NULL, '2026-04-17 21:21:43', '2026-04-17 21:21:43');
+INSERT INTO `transactions` (`id`, `reference_number`, `account_id`, `related_account_id`, `type`, `amount`, `balance_before`, `balance_after`, `reference_code`, `description`, `status`, `ip_address`, `created_at`, `updated_at`) VALUES
+(2, '', 1, NULL, 'top_up', 10000, 0, 10000, NULL, 'Top up via mobile_banking', 'success', NULL, '2026-04-17 20:46:39', '2026-04-17 20:46:39'),
+(3, '', 1, NULL, 'top_up', 49999, 10000, 59999, NULL, 'Top up via mobile_banking', 'success', NULL, '2026-04-17 21:18:43', '2026-04-17 21:18:43'),
+(8, '', 1, NULL, 'transfer_out', 12500, 59999, 47499, NULL, 'Transfer ke INB9695636285 (Buat Jajan)', 'success', NULL, '2026-04-17 21:21:43', '2026-04-17 21:21:43'),
+(9, '', 2, NULL, 'transfer_in', 10000, 0, 10000, NULL, 'Transfer masuk dari INB8913410571', 'success', NULL, '2026-04-17 21:21:43', '2026-04-17 21:21:43'),
+(10, 'LNS17D98035366', 1, NULL, 'loan_disbursement', 1000000, 47499, 1047499, NULL, 'Pencairan pinjaman INB - Modal buka toko', 'success', NULL, '2026-04-18 20:52:29', '2026-04-18 20:52:29'),
+(11, 'CIC03BD2301621', 1, NULL, 'loan_payment', 343334, 1047499, 704165, NULL, 'Pembayaran Cicilan INB Ke-1', 'success', NULL, '2026-04-18 21:55:23', '2026-04-18 21:55:23'),
+(12, 'CIC07199E74894', 1, NULL, 'loan_payment', 343334, 704165, 360831, NULL, 'Pembayaran Cicilan INB Ke-2', 'success', NULL, '2026-04-18 21:56:17', '2026-04-18 21:56:17'),
+(26, 'TRF38BEF567', 1, NULL, 'transfer_out', 12500, 360831, 348331, NULL, 'Transfer ke INB9695636285 (Buat Jajan)', 'success', NULL, '2026-04-20 00:19:39', '2026-04-20 00:19:39'),
+(27, 'TRF38BEF567', 2, NULL, 'transfer_in', 10000, 10000, 20000, NULL, 'Transfer masuk dari INB8913410571', 'success', NULL, '2026-04-20 00:19:39', '2026-04-20 00:19:39'),
+(28, 'TRF3D009155', 1, NULL, 'transfer_out', 102499, 348331, 245832, NULL, 'Transfer ke INB9695636285 (Buat Jajan)', 'success', NULL, '2026-04-20 00:20:48', '2026-04-20 00:20:48'),
+(29, 'TRF3D009155', 2, NULL, 'transfer_in', 99999, 20000, 119999, NULL, 'Transfer masuk dari INB8913410571', 'success', NULL, '2026-04-20 00:20:48', '2026-04-20 00:20:48'),
+(30, 'TOP4BA9B0DC', 1, NULL, 'top_up', 100000, 245832, 345832, NULL, 'Top up via mobile_banking', 'success', NULL, '2026-04-20 00:24:42', '2026-04-20 00:24:42'),
+(31, 'CIC118520B7926', 1, NULL, 'loan_payment', 343334, 345832, 2498, NULL, 'Pembayaran Cicilan INB Ke-3', 'success', NULL, '2026-04-20 05:50:32', '2026-04-20 05:50:32'),
+(32, 'LOAN2F088A7A', 2, NULL, 'loan_disbursement', 1000000, 119999, 1119999, NULL, 'Pencairan Pinjaman ID #4', 'success', NULL, '2026-04-20 05:58:24', '2026-04-20 05:58:24'),
+(33, 'JUE12', 1, NULL, 'top_up', 1000000, 2498, 1002498, NULL, 'Top up via minimarket', 'success', NULL, '2026-04-25 00:28:12', '2026-04-25 00:28:12'),
+(34, 'JUE12', 1, NULL, 'top_up', 1000000, 1002498, 2002498, NULL, 'Top up via minimarket', 'success', NULL, '2026-04-25 00:28:13', '2026-04-25 00:28:13'),
+(35, 'TRX-04ALTQLCN10U', 1, NULL, 'withdrawal', 50000, 1902498, 1852498, NULL, 'Pembayaran Tagihan PLN', 'success', NULL, '2026-04-25 00:49:24', '2026-04-25 00:49:24'),
+(36, 'LOAN756BA5FD', 1, NULL, 'loan_disbursement', 1000000, 1852498, 2852498, NULL, 'Pencairan Pinjaman ID #6', 'success', NULL, '2026-04-26 03:22:14', '2026-04-26 03:22:14');
 
 -- --------------------------------------------------------
 
@@ -429,7 +476,9 @@ CREATE TABLE `transfers` (
 --
 
 INSERT INTO `transfers` (`id`, `transaction_id`, `from_account_id`, `to_account_id`, `amount`, `note`, `method`, `admin_fee`, `created_at`, `updated_at`) VALUES
-(1, 8, 1, 2, 10000, 'Buat Jajan', 'bi_fast', 2500, '2026-04-17 21:21:43', '2026-04-17 21:21:43');
+(1, 8, 1, 2, 10000, 'Buat Jajan', 'bi_fast', 2500, '2026-04-17 21:21:43', '2026-04-17 21:21:43'),
+(2, 26, 1, 2, 10000, 'Buat Jajan', 'bi_fast', 2500, '2026-04-20 00:19:39', '2026-04-20 00:19:39'),
+(3, 28, 1, 2, 99999, 'Buat Jajan', 'bi_fast', 2500, '2026-04-20 00:20:48', '2026-04-20 00:20:48');
 
 -- --------------------------------------------------------
 
@@ -463,7 +512,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `phone`, `nik`, `address`, `birth_date`, `gender`, `photo`, `role`, `is_active`, `remember_token`, `created_at`, `updated_at`) VALUES
 (1, 'Muhammad Iqbal', 'muhammad.iqbal.31d@gmail.com', '2026-04-17 00:58:25', '$2y$12$ugNEgvArVSfI0gZ1BbGoKecMHfAmsK2hMyY4MpmsR6VYw.cu2UXGu', '0895632651921', '1234567890987654', 'Jl.Sukakarya', '2006-12-31', 'male', NULL, 'user', 1, NULL, '2026-04-17 00:45:00', '2026-04-17 00:58:25'),
 (2, 'Ariq', 'crocodille.000@gmail.com', '2026-04-17 21:06:54', '$2y$12$qDCtWPCQUnq5llPbDJqay.NWsuLkBn6zUY1FF8wQSvMhwfstkxV2e', '085161676029', '1234567876543212', 'Jl.Macan Lindungan', '2006-12-31', 'male', NULL, 'user', 1, NULL, '2026-04-17 21:01:52', '2026-04-17 21:06:54'),
-(3, 'Administrator Nexus', 'admin@nexus.com', '2026-04-18 20:16:48', '$2y$12$rQExfKYlNSEdQByz9jjXeeeXB5xF2L26/RJEiSTgxo5r69bvUsZ72', NULL, NULL, NULL, NULL, NULL, NULL, 'admin', 1, 'zYuKVjMr5k', '2026-04-18 20:16:49', '2026-04-18 20:16:49');
+(3, 'Administrator INB', 'admin@inb.com', '2026-04-18 20:16:48', '$2y$12$rQExfKYlNSEdQByz9jjXeeeXB5xF2L26/RJEiSTgxo5r69bvUsZ72', NULL, NULL, NULL, NULL, NULL, NULL, 'admin', 1, 'LflaoMbq3z7wIvLNzptOIcGZ4d7OfGb8ChseS2mpc0r9LqYjsBVd8smZzUGU', '2026-04-18 20:16:49', '2026-04-18 20:16:49');
 
 --
 -- Indexes for dumped tables
@@ -637,13 +686,13 @@ ALTER TABLE `accounts`
 -- AUTO_INCREMENT for table `bills`
 --
 ALTER TABLE `bills`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `bill_payments`
 --
 ALTER TABLE `bill_payments`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -661,13 +710,13 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `loans`
 --
 ALTER TABLE `loans`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `loan_payments`
 --
 ALTER TABLE `loan_payments`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -697,19 +746,19 @@ ALTER TABLE `savings_book_entries`
 -- AUTO_INCREMENT for table `top_ups`
 --
 ALTER TABLE `top_ups`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `transfers`
 --
 ALTER TABLE `transfers`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`

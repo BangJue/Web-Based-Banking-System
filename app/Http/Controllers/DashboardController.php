@@ -42,37 +42,35 @@ class DashboardController extends Controller
             ->with('account')
             ->get();
 
-        // Statistik 30 hari terakhir (kredit vs debit)
-        $monthlyStats = Transaction::whereIn('account_id', $accountIds)
-            ->where('status', 'success')
-            ->where('created_at', '>=', now()->subDays(30))
-            ->select('type', DB::raw('COUNT(*) as count'), DB::raw('SUM(amount) as total'))
-            ->groupBy('type')
-            ->get()
-            ->keyBy('type');
+        $monthlyOutcome = Transaction::whereIn('account_id', $accountIds)
+    ->where('status', 'success')
+    ->where('created_at', '>=', now()->subDays(30))
+    // Masukkan semua tipe transaksi yang mengurangi saldo di sini
+    ->whereIn('type', ['transfer', 'withdrawal', 'bills payment', 'loan_payment', 'debit'])
+    ->sum('amount');
 
-        // Data grafik mutasi harian 7 hari terakhir
-        $chartData = Transaction::whereIn('account_id', $accountIds)
-            ->where('status', 'success')
-            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
-            ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(CASE WHEN type IN ("transfer_in","top_up","loan_disbursement","deposit") THEN amount ELSE 0 END) as credit'),
-                DB::raw('SUM(CASE WHEN type NOT IN ("transfer_in","top_up","loan_disbursement","deposit") THEN amount ELSE 0 END) as debit')
-            )
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+// Data grafik mutasi harian 7 hari terakhir (Pastikan tipe sesuai dengan DB)
+$chartData = Transaction::whereIn('account_id', $accountIds)
+    ->where('status', 'success')
+    ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+    ->select(
+        DB::raw('DATE(created_at) as date'),
+        DB::raw('SUM(CASE WHEN type IN ("transfer_in","top_up","loan_disbursement","deposit") THEN amount ELSE 0 END) as credit'),
+        DB::raw('SUM(CASE WHEN type IN ("transfer","withdrawal","bills payment","loan_payment") THEN amount ELSE 0 END) as debit')
+    )
+    ->groupBy('date')
+    ->orderBy('date')
+    ->get();
 
-        return view('dashboard.user', compact(
-            'user',
-            'accounts',
-            'totalBalance',
-            'recentTransactions',
-            'activeLoans',
-            'monthlyStats',
-            'chartData'
-        ));
+return view('dashboard.user', compact(
+    'user',
+    'accounts',
+    'totalBalance',
+    'recentTransactions',
+    'activeLoans',
+    'monthlyOutcome', // Variabel baru yang sudah dijumlahkan
+    'chartData'
+));
     }
 
     /**
