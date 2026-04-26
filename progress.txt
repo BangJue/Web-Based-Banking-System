@@ -4,12 +4,9 @@ Features :
     Loans ✔
     Transaction (details,report,receipt,etc) ✔
     Manajemen Tagihan / Bills Admin dan User ✔
+        Saving Books ✔
 
 Features Still Ongoing: 
-    Saving Books
 
 Need to Fixed :
     Bills belum ada receiptnya
-    Dashboard admin persetujuan pinjaman baru detail dan jumlah pinjaman tidak muncul.
-    Detail Pinjaman tidak muncul jumlah,alasan,dll.
-    Dashboard Rangkuman Transaksi tidak sesuai tampilannya (uang keluar malah hijau dan simbol ada '+')

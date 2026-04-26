@@ -87,6 +87,11 @@
                     <i class="fa-solid fa-receipt text-lg"></i>
                     <span class="font-bold">Bayar Tagihan</span>
                 </a>
+
+                <a href="{{ route('savings_books.index') }}" class="flex items-center gap-4 p-4 rounded-xl transition-all duration-300 {{ request()->routeIs('loans.*') ? 'active-link' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                    <i class="fa-solid fa-receipt text-lg"></i>
+                    <span class="font-bold">Saving Books</span>
+                </a>
             </nav>
 
             <div class="p-6">

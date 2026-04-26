@@ -73,6 +73,7 @@
                                 <th class="px-8 py-4">Nasabah</th>
                                 <th class="px-8 py-4">Jumlah</th>
                                 <th class="px-8 py-4">Tenor</th>
+                                <th class="px-8 py-4">Tujuan</th>
                                 <th class="px-8 py-4 text-right">Aksi</th>
                             </tr>
                         </thead>
@@ -84,10 +85,18 @@
                                     <p class="text-[10px] text-gray-400 font-medium font-mono">{{ $loan->account->account_number }}</p>
                                 </td>
                                 <td class="px-8 py-5">
-                                    <p class="text-sm font-black text-gray-800">Rp {{ number_format($loan->amount, 0, ',', '.') }}</p>
+                                    {{-- FIX: amount → principal --}}
+                                    <p class="text-sm font-black text-gray-800">Rp {{ number_format($loan->principal, 0, ',', '.') }}</p>
+                                    <p class="text-[10px] text-gray-400 font-bold">Bunga {{ $loan->interest_rate }}%</p>
                                 </td>
                                 <td class="px-8 py-5">
-                                    <span class="text-xs font-bold text-gray-500">{{ $loan->duration_months }} Bln</span>
+                                    {{-- FIX: duration_months → tenor_months --}}
+                                    <span class="text-xs font-bold text-gray-500">{{ $loan->tenor_months }} Bln</span>
+                                    <p class="text-[10px] text-gray-400">Rp {{ number_format($loan->monthly_installment, 0, ',', '.') }}/bln</p>
+                                </td>
+                                <td class="px-8 py-5">
+                                    {{-- FIX: tampilkan tujuan pinjaman --}}
+                                    <p class="text-xs text-gray-500 italic">{{ $loan->purpose ?? '-' }}</p>
                                 </td>
                                 <td class="px-8 py-5 text-right">
                                     <a href="{{ route('admin.loans.show', $loan->id) }}" class="inline-flex items-center gap-2 bg-blue-50 text-blue-600 text-xs font-black px-4 py-2 rounded-xl hover:bg-blue-600 hover:text-white transition-all">
@@ -97,7 +106,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="px-8 py-10 text-center text-gray-400 text-sm italic">Tidak ada pengajuan pinjaman baru.</td>
+                                <td colspan="5" class="px-8 py-10 text-center text-gray-400 text-sm italic">Tidak ada pengajuan pinjaman baru.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -108,11 +117,15 @@
             <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8">
                 <h3 class="text-lg font-bold text-gray-800 mb-6 font-black uppercase tracking-tight">Aktivitas 7 Hari Terakhir</h3>
                 <div class="space-y-4">
+                    @php
+                        $maxVolume = $dailyTransactions->max('volume') ?: 1;
+                    @endphp
                     @foreach($dailyTransactions as $dt)
                     <div class="flex items-center gap-4">
                         <p class="w-20 text-[10px] font-black text-gray-400 uppercase">{{ \Carbon\Carbon::parse($dt->date)->format('d M') }}</p>
                         <div class="flex-1 h-3 bg-gray-50 rounded-full overflow-hidden">
-                            <div class="h-full bg-blue-500 rounded-full" style="width: {{ min(($dt->volume / max($stats['today_volume'], 1)) * 100, 100) }}%"></div>
+                            {{-- FIX: pakai max dari data harian bukan today_volume agar bar proporsional --}}
+                            <div class="h-full bg-blue-500 rounded-full" style="width: {{ min(($dt->volume / $maxVolume) * 100, 100) }}%"></div>
                         </div>
                         <p class="w-32 text-right text-xs font-bold text-gray-700">Rp {{ number_format($dt->volume, 0, ',', '.') }}</p>
                     </div>
@@ -145,12 +158,14 @@
             <div class="bg-blue-600 rounded-[2.5rem] p-8 text-white shadow-xl shadow-blue-100">
                 <h3 class="text-sm font-black mb-6 uppercase tracking-widest opacity-80">Jenis Transaksi Hari Ini</h3>
                 <div class="space-y-4">
-                    @foreach($todayTypeDistribution as $type)
+                    @forelse($todayTypeDistribution as $type)
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-bold capitalize">{{ str_replace('_', ' ', $type->type) }}</span>
                         <span class="bg-blue-400/30 px-3 py-1 rounded-lg text-xs font-black">{{ $type->count }}</span>
                     </div>
-                    @endforeach
+                    @empty
+                    <p class="text-xs text-white/50 italic">Belum ada transaksi hari ini.</p>
+                    @endforelse
                 </div>
             </div>
         </div>

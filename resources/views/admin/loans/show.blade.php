@@ -50,24 +50,41 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center py-3 border-b border-gray-50">
                         <span class="text-gray-500 font-medium">Jumlah Pinjaman</span>
-                        {{-- Menggunakan principal sesuai Model Loan --}}
                         <span class="text-lg font-black text-gray-800">Rp {{ number_format($loan->principal, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 border-b border-gray-50">
                         <span class="text-gray-500 font-medium">Tenor / Durasi</span>
-                        {{-- Menggunakan tenor_months sesuai Model Loan --}}
                         <span class="font-bold text-gray-800">{{ $loan->tenor_months }} Bulan</span>
                     </div>
                     <div class="flex justify-between items-center py-3 border-b border-gray-50">
                         <span class="text-gray-500 font-medium">Suku Bunga</span>
                         <span class="font-bold text-gray-800">{{ $loan->interest_rate }}% (Flat)</span>
                     </div>
-                    <div class="flex justify-between items-center py-3">
+                    <div class="flex justify-between items-center py-3 border-b border-gray-50">
                         <span class="text-gray-500 font-medium">Angsuran / Bulan</span>
                         <span class="font-black text-blue-600">Rp {{ number_format($loan->monthly_installment, 0, ',', '.') }}</span>
                     </div>
+                    <div class="flex justify-between items-center py-3 border-b border-gray-50">
+                        <span class="text-gray-500 font-medium">Total Hutang</span>
+                        <span class="font-bold text-gray-800">Rp {{ number_format($loan->total_debt, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3">
+                        <span class="text-gray-500 font-medium">Tanggal Pengajuan</span>
+                        <span class="font-bold text-gray-800">{{ $loan->created_at->format('d M Y, H:i') }}</span>
+                    </div>
                 </div>
             </div>
+
+            {{-- FIX: Alasan / Tujuan Pinjaman dari Nasabah (kolom purpose) --}}
+            @if($loan->purpose)
+            <div class="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Tujuan Pinjaman (dari Nasabah)</h3>
+                <div class="flex gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                    <i class="fas fa-quote-left text-blue-300 text-lg mt-0.5"></i>
+                    <p class="text-sm text-blue-800 font-medium italic leading-relaxed">{{ $loan->purpose }}</p>
+                </div>
+            </div>
+            @endif
         </div>
 
         {{-- Kanan: Card Keputusan --}}
@@ -81,7 +98,9 @@
                         <form action="{{ route('admin.loans.approve', $loan->id) }}" method="POST">
                             @csrf
                             @method('PATCH')
-                            <button type="submit" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-black rounded-2xl transition-all uppercase text-xs tracking-widest shadow-lg shadow-green-900/20" onclick="return confirm('Setujui dan cairkan dana?')">
+                            <button type="submit" 
+                                class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-black rounded-2xl transition-all uppercase text-xs tracking-widest shadow-lg shadow-green-900/20"
+                                onclick="return confirm('Setujui dan cairkan dana?')">
                                 Setujui Pinjaman
                             </button>
                         </form>
@@ -106,7 +125,9 @@
                                 @enderror
                             </div>
 
-                            <button type="submit" class="w-full py-4 bg-transparent hover:bg-red-500/10 text-red-400 hover:text-red-500 font-black rounded-2xl transition-all uppercase text-xs tracking-widest border border-red-500/30" onclick="return confirm('Tolak pengajuan ini?')">
+                            <button type="submit" 
+                                class="w-full py-4 bg-transparent hover:bg-red-500/10 text-red-400 hover:text-red-500 font-black rounded-2xl transition-all uppercase text-xs tracking-widest border border-red-500/30"
+                                onclick="return confirm('Tolak pengajuan ini?')">
                                 Tolak Pengajuan
                             </button>
                         </form>
@@ -116,13 +137,23 @@
                     <div class="text-center py-4">
                         <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Status Saat Ini</p>
                         <div class="mt-4">
-                            @if(in_array($loan->status, ['active', 'approved', 'paid_off']))
+                            @if(in_array($loan->status, ['active', 'paid_off']))
                                 <div class="inline-flex items-center justify-center w-12 h-12 bg-green-500/20 text-green-400 rounded-full mb-2">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <p class="text-2xl font-black text-green-400 uppercase tracking-tight">
                                     {{ $loan->status === 'paid_off' ? 'LUNAS' : 'AKTIF' }}
                                 </p>
+                                @if($loan->disbursed_at)
+                                <p class="text-[10px] text-white/40 font-bold mt-2 uppercase tracking-widest">
+                                    Dicairkan: {{ \Carbon\Carbon::parse($loan->disbursed_at)->format('d M Y') }}
+                                </p>
+                                @endif
+                            @elseif($loan->status === 'overdue')
+                                <div class="inline-flex items-center justify-center w-12 h-12 bg-orange-500/20 text-orange-400 rounded-full mb-2">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <p class="text-2xl font-black text-orange-400 uppercase tracking-tight">JATUH TEMPO</p>
                             @else
                                 <div class="inline-flex items-center justify-center w-12 h-12 bg-red-500/20 text-red-400 rounded-full mb-2">
                                     <i class="fas fa-times"></i>
@@ -131,6 +162,7 @@
                             @endif
                         </div>
 
+                        {{-- Alasan penolakan dari admin --}}
                         @if($loan->rejection_reason)
                             <div class="mt-6 p-4 bg-black/20 rounded-2xl text-[11px] text-left border border-white/5">
                                 <p class="font-black uppercase tracking-widest opacity-40 mb-2">Alasan Penolakan:</p>
@@ -140,6 +172,30 @@
                     </div>
                 @endif
             </div>
+
+            {{-- Info sisa hutang jika aktif --}}
+            @if(in_array($loan->status, ['active', 'overdue']))
+            <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Progress Cicilan</p>
+                @php
+                    $progress = $loan->tenor_months > 0
+                        ? round(($loan->paid_installments / $loan->tenor_months) * 100)
+                        : 0;
+                @endphp
+                <div class="flex justify-between text-xs font-bold text-gray-500 mb-2">
+                    <span>{{ $loan->paid_installments }}/{{ $loan->tenor_months }} cicilan</span>
+                    <span>{{ $progress }}%</span>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2 mb-4">
+                    <div class="h-2 rounded-full {{ $loan->status === 'overdue' ? 'bg-orange-500' : 'bg-blue-500' }}"
+                         style="width: {{ $progress }}%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500">
+                    <span>Sisa Hutang</span>
+                    <span class="font-black text-gray-800">Rp {{ number_format($loan->remaining_debt, 0, ',', '.') }}</span>
+                </div>
+            </div>
+            @endif
 
             <div class="bg-gray-50 p-6 rounded-[2rem] border border-gray-100">
                 <div class="flex gap-3">
