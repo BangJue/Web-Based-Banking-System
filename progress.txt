@@ -4,9 +4,11 @@ Features :
     Loans ✔
     Transaction (details,report,receipt,etc) ✔
     Manajemen Tagihan / Bills Admin dan User ✔
-        Saving Books ✔
+    Saving Books ✔
 
 Features Still Ongoing: 
 
 Need to Fixed :
-    Bills belum ada receiptnya
+    Bills tidak muncul biaya admin di dashboard admin dan edit biaya admin tidak muncul
+    Bug montly outcome tidak masuk
+    Mutasi filter tidak sinkron ketika di download
