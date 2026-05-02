@@ -118,15 +118,16 @@ Follow these steps to deploy Indonesia National Bank (INB) on your local machine
 ```bash
 git clone [https://github.com/yourusername/inb.git](https://github.com/yourusername/inb.git)
 cd inb
+```
 
 **2. Install Dependencies & Compile Assets**
 ```bash
 # Install PHP backend dependencies
 composer install
-
 # Install and compile frontend assets
 npm install
 npm run build
+```
 
 **3. Setup Environment**
 ```bash
@@ -140,8 +141,10 @@ DB_PORT=3306
 DB_DATABASE=example
 DB_USERNAME=root
 DB_PASSWORD=
+```
 
 **4. Run Application**
 ```bash
 php artisan serve
 npm run dev
+```

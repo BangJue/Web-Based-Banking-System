@@ -11,32 +11,51 @@
     <div class="grid grid-cols-1 xl:grid-cols-4 gap-5">
 
         {{-- Balance card --}}
-        <div class="xl:col-span-3 relative overflow-hidden bg-blue-600 rounded-[2rem] p-7 md:p-8 text-white shadow-2xl shadow-blue-500/30 group">
-            <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div class="xl:col-span-3 relative overflow-hidden bg-blue-600 rounded-[1.5rem] p-5 md:p-6 text-white shadow-xl shadow-blue-500/20 group">
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <p class="text-blue-200 font-semibold tracking-widest uppercase text-[10px]">
-                        Total Saldo Tersedia
-                    </p>
-                    <h1 class="text-3xl md:text-5xl font-black mt-2 tracking-tight">
+                    <div class="flex items-center gap-2">
+                        <p class="text-blue-200 font-black tracking-[0.15em] uppercase text-[9px] opacity-80">
+                            Total Saldo Tersedia
+                        </p>
+                        <span class="bg-white/10 text-[8px] px-2 py-0.5 rounded-md border border-white/10 font-mono">
+                            {{ $user->name }} <!-- Menampilkan Nama Pemilik -->
+                        </span>
+                    </div>
+                    
+                    <h1 class="text-2xl md:text-4xl font-black mt-1 tracking-tighter">
                         IDR {{ number_format($totalBalance, 0, ',', '.') }}
                     </h1>
-                    <p class="text-blue-300 text-xs mt-2 font-medium">
-                        {{ $accounts->count() }} rekening aktif
-                    </p>
+
+                    <div class="flex items-center gap-3 mt-2">
+                        <!-- Menampilkan Nomor Rekening Utama -->
+                        <div class="flex items-center gap-1.5 bg-black/10 px-2 py-1 rounded-lg">
+                            <i class="fa-solid fa-fingerprint text-[10px] text-blue-300"></i>
+                            <p class="text-white font-mono text-[11px] tracking-widest">
+                                {{ $accounts->first()->account_number ?? 'No Account' }}
+                            </p>
+                        </div>
+                        <p class="text-blue-200/80 text-[10px] font-medium">
+                            {{ $accounts->count() }} Rekening Aktif
+                        </p>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3 flex-wrap">
+                
+                <div class="flex items-center gap-2.5">
                     <a href="{{ route('transfers.create') }}"
-                       class="bg-white text-blue-600 px-5 py-2.5 rounded-xl font-bold hover:bg-black hover:text-white transition-all duration-300 flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-paper-plane text-xs"></i> Transfer
+                    class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold hover:bg-black hover:text-white transition-all duration-300 flex items-center gap-2 text-xs shadow-lg shadow-black/5">
+                        <i class="fa-solid fa-paper-plane text-[10px]"></i> Transfer
                     </a>
                     <a href="{{ route('top_ups.create') }}"
-                       class="bg-white/15 border border-white/20 px-5 py-2.5 rounded-xl font-bold hover:bg-white/25 transition-all duration-300 flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-plus text-xs"></i> Top Up
+                    class="bg-white/15 border border-white/20 px-4 py-2 rounded-lg font-bold hover:bg-white/25 transition-all duration-300 flex items-center gap-2 text-xs backdrop-blur-sm">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Top Up
                     </a>
                 </div>
             </div>
-            <div class="absolute -right-10 -bottom-10 w-56 h-56 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700 pointer-events-none"></div>
-            <div class="absolute right-8 top-8 opacity-10 text-[8rem] leading-none pointer-events-none select-none">
+
+            {{-- Decorative Elements --}}
+            <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
+            <div class="absolute right-6 top-5 opacity-10 text-[5rem] leading-none pointer-events-none select-none">
                 <i class="fa-solid fa-building-columns"></i>
             </div>
         </div>

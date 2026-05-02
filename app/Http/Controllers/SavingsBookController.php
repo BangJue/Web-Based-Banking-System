@@ -10,18 +10,14 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf; // Import PDF Facade
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SavingsBookController extends Controller
 {
-    /**
-     * Daftar buku tabungan milik user.
-     */
     public function index()
     {
         /** @var User $user */
-        $user = Auth::user();
-        
+        $user       = Auth::user();
         $accountIds = $user->accounts()->pluck('id');
 
         $savingsBooks = SavingsBook::whereIn('account_id', $accountIds)
@@ -29,7 +25,6 @@ class SavingsBookController extends Controller
             ->withCount('entries')
             ->get();
 
-        // Rekening yang belum punya buku tabungan
         $accountsWithoutBook = $user->accounts()
             ->where('status', 'active')
             ->whereDoesntHave('savingsBook')
@@ -38,14 +33,9 @@ class SavingsBookController extends Controller
         return view('savings_books.index', compact('savingsBooks', 'accountsWithoutBook'));
     }
 
-    /**
-     * Terbitkan buku tabungan baru untuk rekening tertentu.
-     */
     public function store(Request $request)
     {
-        $request->validate([
-            'account_id' => ['required', 'exists:accounts,id'],
-        ]);
+        $request->validate(['account_id' => ['required', 'exists:accounts,id']]);
 
         $account = Account::findOrFail($request->account_id);
 
@@ -70,9 +60,6 @@ class SavingsBookController extends Controller
             ->with('success', 'Buku tabungan berhasil diterbitkan. No: ' . $savingsBook->book_number);
     }
 
-    /**
-     * Detail buku tabungan + daftar mutasi.
-     */
     public function show(SavingsBook $savingsBook, Request $request)
     {
         $this->authorizeSavingsBook($savingsBook);
@@ -80,7 +67,7 @@ class SavingsBookController extends Controller
         $entries = $savingsBook->entries()
             ->with('transaction')
             ->when($request->date_from, fn($q) => $q->where('entry_date', '>=', $request->date_from))
-            ->when($request->date_to, fn($q) => $q->where('entry_date', '<=', $request->date_to))
+            ->when($request->date_to,   fn($q) => $q->where('entry_date', '<=', $request->date_to))
             ->orderBy('entry_date')
             ->orderBy('id')
             ->paginate(30)
@@ -88,12 +75,20 @@ class SavingsBookController extends Controller
 
         $savingsBook->load('account.user');
 
-        return view('savings_books.show', compact('savingsBook', 'entries'));
+        // Statistik ringkas untuk ditampilkan di sidebar stats
+        $totalDebit  = $savingsBook->entries()
+            ->when($request->date_from, fn($q) => $q->where('entry_date', '>=', $request->date_from))
+            ->when($request->date_to,   fn($q) => $q->where('entry_date', '<=', $request->date_to))
+            ->sum('debit');
+
+        $totalCredit = $savingsBook->entries()
+            ->when($request->date_from, fn($q) => $q->where('entry_date', '>=', $request->date_from))
+            ->when($request->date_to,   fn($q) => $q->where('entry_date', '<=', $request->date_to))
+            ->sum('credit');
+
+        return view('savings_books.show', compact('savingsBook', 'entries', 'totalDebit', 'totalCredit'));
     }
 
-    /**
-     * Sinkronisasi / cetak mutasi baru dari tabel transactions ke buku tabungan.
-     */
     public function sync(SavingsBook $savingsBook)
     {
         $this->authorizeSavingsBook($savingsBook);
@@ -139,38 +134,52 @@ class SavingsBookController extends Controller
     }
 
     /**
-     * Unduh buku tabungan sebagai PDF.
+     * Download PDF — menyesuaikan dengan filter tanggal jika ada,
+     * jika tidak ada filter maka menggunakan semua entri sejak awal s/d last_printed.
      */
-    public function download(SavingsBook $savingsBook)
+    public function download(SavingsBook $savingsBook, Request $request)
     {
         $this->authorizeSavingsBook($savingsBook);
 
-        $entries = $savingsBook->entries()
-            ->with('transaction')
-            ->orderBy('entry_date')
-            ->orderBy('id')
-            ->get();
-
         $savingsBook->load('account.user');
 
-        // Menggunakan Pdf facade yang sudah di-import di atas
-        $pdf = Pdf::loadView(
-            'savings_books.pdf',
-            compact('savingsBook', 'entries')
-        )->setPaper('A4', 'landscape');
+        $query = $savingsBook->entries()->with('transaction')->orderBy('entry_date')->orderBy('id');
 
-        return $pdf->download('buku-tabungan-' . $savingsBook->book_number . '.pdf');
+        $dateFrom = $request->date_from;
+        $dateTo   = $request->date_to;
+
+        // Jika tidak ada filter sama sekali, batasi s/d last_printed agar PDF
+        // mencerminkan data yang sudah di-sync (bukan entri yang belum dicetak).
+        if (!$dateFrom && !$dateTo && $savingsBook->last_printed) {
+            $query->where('entry_date', '<=', $savingsBook->last_printed->toDateString());
+        }
+
+        if ($dateFrom) $query->where('entry_date', '>=', $dateFrom);
+        if ($dateTo)   $query->where('entry_date', '<=', $dateTo);
+
+        $entries = $query->get();
+
+        // Hitung total untuk summary di PDF
+        $totalDebit  = $entries->sum('debit');
+        $totalCredit = $entries->sum('credit');
+
+        $pdf = Pdf::loadView('savings_books.pdf', compact(
+            'savingsBook', 'entries', 'totalDebit', 'totalCredit', 'dateFrom', 'dateTo'
+        ))->setPaper('A4', 'landscape');
+
+        $suffix = ($dateFrom || $dateTo)
+            ? '-' . ($dateFrom ?? 'awal') . '_sd_' . ($dateTo ?? 'akhir')
+            : '';
+
+        return $pdf->download('buku-tabungan-' . $savingsBook->book_number . $suffix . '.pdf');
     }
 
-    // -------------------------------------------------------------------------
-    // Helper
     // -------------------------------------------------------------------------
 
     private function authorizeSavingsBook(SavingsBook $savingsBook): void
     {
         /** @var User $user */
-        $user = Auth::user();
-        
+        $user           = Auth::user();
         $userAccountIds = $user->accounts()->pluck('id');
 
         if (!$userAccountIds->contains($savingsBook->account_id) && !$user->isAdmin()) {
