@@ -9,6 +9,4 @@ Features :
 Features Still Ongoing: 
 
 Need to Fixed :
-    Bills tidak muncul biaya admin di dashboard admin dan edit biaya admin tidak muncul
-    Bug montly outcome tidak masuk
-    Mutasi filter tidak sinkron ketika di download
+    Fix user bills payment biaya admin tidak masuk dan redesign UI

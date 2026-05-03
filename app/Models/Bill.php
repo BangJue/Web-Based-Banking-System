@@ -15,6 +15,7 @@ class Bill extends Model
         'bill_name',
         'category',
         'icon',
+        'admin_fee',
         'is_active',
     ];
 

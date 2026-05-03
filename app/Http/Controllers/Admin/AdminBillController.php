@@ -23,16 +23,19 @@ class AdminBillController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255', // Dari input name="name" di view
-            'category' => 'required|string',
+            'name'      => 'required|string|max:255',
+            'category'  => 'required|string',
+            'admin_fee' => 'required|numeric|min:0',
+            'is_active' => 'nullable|boolean',
         ]);
 
         Bill::create([
             'bill_code' => 'BILL-' . strtoupper(Str::random(6)),
             'bill_name' => $request->name,
             'category'  => strtolower($request->category),
-            'icon'      => 'fas fa-file-invoice', // Default icon sesuai view Anda
-            'is_active' => true,
+            'icon'      => $this->iconFromCategory(strtolower($request->category)),
+            'admin_fee' => (int) $request->admin_fee,
+            'is_active' => $request->boolean('is_active', true),
         ]);
 
         return redirect()->route('admin.bills.index')->with('success', 'Layanan tagihan berhasil dibuat.');
@@ -46,13 +49,18 @@ class AdminBillController extends Controller
     public function update(Request $request, Bill $bill)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'category' => 'required|string',
+            'name'      => 'required|string|max:255',
+            'category'  => 'required|string',
+            'admin_fee' => 'required|numeric|min:0',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $bill->update([
             'bill_name' => $request->name,
             'category'  => strtolower($request->category),
+            'icon'      => $this->iconFromCategory(strtolower($request->category)),
+            'admin_fee' => (int) $request->admin_fee,
+            'is_active' => $request->boolean('is_active', $bill->is_active),
         ]);
 
         return redirect()->route('admin.bills.index')->with('success', 'Layanan tagihan diperbarui.');
@@ -62,5 +70,21 @@ class AdminBillController extends Controller
     {
         $bill->delete();
         return back()->with('success', 'Layanan tagihan berhasil dihapus.');
+    }
+
+    // ── Helper: icon FA sesuai kategori ──────────────────────────────────────
+
+    private function iconFromCategory(string $category): string
+    {
+        return match ($category) {
+            'listrik'    => 'fas fa-bolt',
+            'air'        => 'fas fa-tint',
+            'internet'   => 'fas fa-wifi',
+            'telepon'    => 'fas fa-phone',
+            'bpjs'       => 'fas fa-heartbeat',
+            'pajak'      => 'fas fa-landmark',
+            'pendidikan' => 'fas fa-graduation-cap',
+            default      => 'fas fa-file-invoice',
+        };
     }
 }
