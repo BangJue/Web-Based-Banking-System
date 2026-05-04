@@ -3,78 +3,92 @@
 @section('title', 'Executive Dashboard')
 
 @section('content')
-<div class="space-y-7">
+<div class="max-w-[1600px] mx-auto space-y-8 pb-10">
 
     {{-- ================================================================
-         HEADER
+         HEADER SECTION
     ================================================================ --}}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-200 pb-8">
         <div>
-            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Indonesia National Bank</p>
-            <h1 class="text-2xl font-black text-gray-900 tracking-tight mt-0.5">Executive Dashboard</h1>
-            <p class="text-gray-400 text-sm font-medium mt-0.5">Monitoring performa & operasional sistem hari ini.</p>
+            <div class="flex items-center gap-2 mb-2">
+                <span class="w-8 h-[2px] bg-blue-600"></span>
+                <p class="text-[11px] font-black text-blue-600 uppercase tracking-[0.3em]">System Overview</p>
+            </div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Executive Dashboard</h1>
+            <p class="text-slate-500 text-sm mt-1">Laporan analitik performa operasional <span class="font-bold text-slate-700">Indonesia National Bank</span> hari ini.</p>
         </div>
-        <div class="flex items-center gap-2.5 bg-white border border-gray-100 shadow-sm px-4 py-3 rounded-2xl self-start sm:self-auto">
-            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <i class="fa-solid fa-calendar-day text-white text-xs"></i>
+        
+        <div class="flex items-center gap-4 bg-white p-2 pr-5 rounded-2xl border border-gray-200 shadow-sm">
+            <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-gray-100 text-blue-600">
+                <i class="fa-solid fa-calendar-check text-lg"></i>
             </div>
             <div>
-                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Hari Ini</p>
-                <p class="text-sm font-black text-gray-900 mt-0.5">{{ now()->format('d M Y') }}</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Data Per Tanggal</p>
+                <p class="text-sm font-black text-slate-900 mt-1">{{ now()->format('d F Y') }}</p>
             </div>
         </div>
     </div>
 
     {{-- ================================================================
-         ROW 1 · STATS CARDS
+         TOP STATS GRID
     ================================================================ --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
 
-        {{-- Total Dana --}}
-        <div class="bg-white rounded-[1.75rem] border border-gray-100 shadow-sm p-6 flex flex-col justify-between gap-5">
-            <div class="flex items-start justify-between">
-                <div class="w-11 h-11 bg-green-50 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-vault text-green-600 text-base"></i>
+        {{-- Total Dana - White Minimalist --}}
+        <div class="group bg-white rounded-3xl border border-gray-200 p-6 transition-all duration-300 hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/5 relative overflow-hidden">
+            <div class="relative z-10 flex flex-col h-full justify-between gap-6">
+                <div class="flex items-start justify-between">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                        <i class="fa-solid fa-vault text-xl"></i>
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Stabil
+                    </div>
                 </div>
-                <span class="text-[9px] font-black text-green-600 bg-green-50 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                    <i class="fa-solid fa-arrow-trend-up text-[8px]"></i> Stabil
-                </span>
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Total Dana Nasabah</p>
+                    <h3 class="text-2xl font-black text-slate-900 tracking-tighter">
+                        <span class="text-sm font-bold text-slate-400 mr-0.5 font-sans">Rp</span>{{ number_format($stats['total_balance'], 0, ',', '.') }}
+                    </h3>
+                </div>
             </div>
-            <div>
-                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-2">Total Dana Nasabah</p>
-                <h3 class="text-xl font-black text-gray-900 leading-none">
-                    Rp {{ number_format($stats['total_balance'], 0, ',', '.') }}
-                </h3>
+            <div class="absolute -right-4 -bottom-4 opacity-[0.03] text-7xl rotate-12 group-hover:rotate-0 transition-transform duration-500">
+                <i class="fa-solid fa-vault text-slate-900"></i>
             </div>
         </div>
 
-        {{-- Volume Transaksi --}}
-        <div class="bg-slate-900 rounded-[1.75rem] shadow-xl p-6 flex flex-col justify-between gap-5">
-            <div class="w-11 h-11 bg-indigo-600/20 rounded-xl flex items-center justify-center">
-                <i class="fa-solid fa-bolt text-indigo-400 text-base"></i>
+        {{-- Volume Transaksi - Dark Slate (High Contrast) --}}
+        <div class="group bg-slate-900 rounded-3xl p-6 shadow-2xl shadow-slate-900/20 relative overflow-hidden transition-all duration-300 hover:-translate-y-1">
+            <div class="relative z-10 flex flex-col h-full justify-between gap-6">
+                <div class="w-12 h-12 bg-white/10 text-blue-400 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                    <i class="fa-solid fa-bolt-lightning text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Volume Hari Ini</p>
+                    <h3 class="text-2xl font-black text-white tracking-tighter italic">
+                        <span class="text-sm font-bold text-slate-500 mr-0.5">Rp</span>{{ number_format($stats['today_volume'], 0, ',', '.') }}
+                    </h3>
+                    <p class="text-[10px] font-bold text-blue-400 mt-2 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-[8px]"></i> {{ $stats['today_transactions'] }} Transaksi Berhasil
+                    </p>
+                </div>
             </div>
-            <div>
-                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-2">Volume Hari Ini</p>
-                <h3 class="text-xl font-black text-indigo-400 leading-none">
-                    Rp {{ number_format($stats['today_volume'], 0, ',', '.') }}
-                </h3>
-                <p class="text-[10px] font-bold text-gray-500 mt-2">{{ $stats['today_transactions'] }} transaksi berhasil</p>
-            </div>
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-blue-600/10 rounded-full blur-3xl"></div>
         </div>
 
         {{-- Status Akun --}}
-        <div class="bg-white rounded-[1.75rem] border border-gray-100 shadow-sm p-6 flex flex-col justify-between gap-5">
-            <div class="w-11 h-11 bg-blue-50 rounded-xl flex items-center justify-center">
-                <i class="fa-solid fa-users text-blue-600 text-base"></i>
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 flex flex-col justify-between gap-6 hover:shadow-lg transition-all duration-300">
+            <div class="w-12 h-12 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center border border-gray-100">
+                <i class="fa-solid fa-users-gear text-xl"></i>
             </div>
             <div>
-                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-2">Status Akun</p>
-                <h3 class="text-xl font-black text-gray-900 leading-none mb-3">{{ $stats['total_users'] }} <span class="text-xs text-gray-400 font-bold">Nasabah</span></h3>
-                <div class="flex gap-3">
-                    <span class="text-[10px] font-black text-green-600 bg-green-50 px-2.5 py-1 rounded-full uppercase">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Populasi Nasabah</p>
+                <h3 class="text-2xl font-black text-slate-900 tracking-tighter">{{ $stats['total_users'] }} <span class="text-xs text-slate-400 font-bold uppercase ml-1">Jiwa</span></h3>
+                <div class="flex gap-2 mt-3">
+                    <span class="flex-1 text-center text-[9px] font-black text-emerald-600 bg-emerald-50 py-2 rounded-xl border border-emerald-100 uppercase">
                         {{ $stats['active_accounts'] }} Aktif
                     </span>
-                    <span class="text-[10px] font-black text-red-600 bg-red-50 px-2.5 py-1 rounded-full uppercase">
+                    <span class="flex-1 text-center text-[9px] font-black text-rose-600 bg-rose-50 py-2 rounded-xl border border-rose-100 uppercase">
                         {{ $stats['blocked_accounts'] }} Blokir
                     </span>
                 </div>
@@ -82,92 +96,91 @@
         </div>
 
         {{-- Status Pinjaman --}}
-        <div class="bg-white rounded-[1.75rem] border border-gray-100 shadow-sm p-6 flex flex-col justify-between gap-5">
-            <div class="w-11 h-11 bg-amber-50 rounded-xl flex items-center justify-center">
-                <i class="fa-solid fa-stamp text-amber-600 text-base"></i>
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 flex flex-col justify-between gap-6 hover:shadow-lg transition-all duration-300">
+            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center border border-amber-100">
+                <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
             </div>
             <div>
-                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-2">Status Pinjaman</p>
-                <h3 class="text-xl font-black text-amber-600 leading-none mb-3">{{ $stats['pending_loans'] }} <span class="text-xs text-gray-400 font-bold">Menunggu</span></h3>
-                <div class="flex gap-3">
-                    <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full uppercase">
-                        {{ $stats['active_loans'] }} Aktif
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Antrian Kredit</p>
+                <h3 class="text-2xl font-black text-amber-600 tracking-tighter">{{ $stats['pending_loans'] }} <span class="text-xs text-slate-400 font-bold uppercase ml-1 font-sans italic">Pending</span></h3>
+                <div class="flex gap-2 mt-3">
+                    <span class="flex-1 text-center text-[9px] font-black text-blue-600 bg-blue-50 py-2 rounded-xl border border-blue-100 uppercase tracking-tighter">
+                        {{ $stats['active_loans'] }} Berjalan
                     </span>
-                    <span class="text-[10px] font-black text-red-600 bg-red-50 px-2.5 py-1 rounded-full uppercase">
+                    <span class="flex-1 text-center text-[9px] font-black text-rose-600 bg-rose-50 py-2 rounded-xl border border-rose-100 uppercase">
                         {{ $stats['overdue_loans'] }} Lewat
                     </span>
                 </div>
             </div>
         </div>
-
     </div>
 
     {{-- ================================================================
-         ROW 2 · LOAN APPROVAL TABLE + RIGHT COLUMN
+         MAIN CONTENT AREA
     ================================================================ --}}
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
-        {{-- LEFT: Loan approval --}}
-        <div class="xl:col-span-2 space-y-6">
+        {{-- LEFT COLUMN: Loan approval --}}
+        <div class="xl:col-span-2 space-y-8">
 
-            {{-- Persetujuan Pinjaman --}}
-            <div class="bg-white rounded-[1.75rem] border border-gray-100 shadow-sm overflow-hidden">
-                <div class="px-7 py-5 border-b border-gray-50 flex items-center justify-between">
+            {{-- Table Card --}}
+            <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-white">
                     <div>
-                        <h3 class="font-black text-base text-gray-900 leading-none">Persetujuan Pinjaman Baru</h3>
-                        <p class="text-[10px] text-gray-400 font-medium mt-1">Pengajuan yang menunggu review</p>
+                        <h3 class="font-black text-lg text-slate-900 tracking-tight">Persetujuan Pinjaman</h3>
+                        <p class="text-xs text-slate-400 font-medium">Review manual pengajuan kredit nasabah</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="bg-amber-100 text-amber-700 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
-                            {{ $pendingLoans->count() }} Pending
-                        </span>
-                        <a href="{{ route('admin.loans.index') }}"
-                           class="text-indigo-600 text-[10px] font-black hover:underline uppercase tracking-wider">
-                            Lihat Semua
-                        </a>
-                    </div>
+                    <a href="{{ route('admin.loans.index') }}" class="bg-slate-50 text-slate-600 text-[11px] font-black px-4 py-2 rounded-xl border border-gray-200 hover:bg-slate-900 hover:text-white transition-all uppercase tracking-widest">
+                        Lihat Semua
+                    </a>
                 </div>
+                
                 <div class="overflow-x-auto">
-                    <table class="w-full">
+                    <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50/60">
-                                <th class="px-6 py-3.5 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest">Nasabah</th>
-                                <th class="px-6 py-3.5 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest">Jumlah</th>
-                                <th class="px-6 py-3.5 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest">Tenor</th>
-                                <th class="px-6 py-3.5 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest hidden lg:table-cell">Tujuan</th>
-                                <th class="px-6 py-3.5 text-right text-[9px] font-black text-gray-400 uppercase tracking-widest">Aksi</th>
+                            <tr class="bg-slate-50/50">
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nasabah</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nominal</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tenor</th>
+                                <th class="px-6 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-50">
+                        <tbody class="divide-y divide-gray-100">
                             @forelse($pendingLoans as $loan)
-                            <tr class="hover:bg-gray-50/60 transition-colors">
-                                <td class="px-6 py-4">
-                                    <p class="font-bold text-gray-900 text-sm leading-none">{{ $loan->account->user->name }}</p>
-                                    <p class="text-[10px] text-gray-400 font-mono mt-1">{{ $loan->account->account_number }}</p>
+                            <tr class="hover:bg-blue-50/30 transition-colors group">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-black text-xs border border-gray-200 group-hover:bg-white transition-colors">
+                                            {{ strtoupper(substr($loan->account->user->name, 0, 1)) }}
+                                        </div>
+                                        <div>
+                                            <p class="font-black text-slate-900 text-sm tracking-tight">{{ $loan->account->user->name }}</p>
+                                            <p class="text-[10px] text-slate-400 font-mono mt-0.5">{{ $loan->account->account_number }}</p>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <p class="text-sm font-black text-gray-900 leading-none">Rp {{ number_format($loan->principal, 0, ',', '.') }}</p>
-                                    <p class="text-[10px] text-gray-400 font-bold mt-1">Bunga {{ $loan->interest_rate }}%</p>
+                                <td class="px-6 py-5">
+                                    <p class="text-sm font-black text-slate-900 tracking-tight">Rp {{ number_format($loan->principal, 0, ',', '.') }}</p>
+                                    <span class="text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase">Bunga {{ $loan->interest_rate }}%</span>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <p class="text-sm font-bold text-gray-700">{{ $loan->tenor_months }} Bln</p>
-                                    <p class="text-[10px] text-gray-400 mt-1">Rp {{ number_format($loan->monthly_installment, 0, ',', '.') }}/bln</p>
+                                <td class="px-6 py-5">
+                                    <p class="text-sm font-bold text-slate-700 tracking-tighter">{{ $loan->tenor_months }} Bulan</p>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Cicilan: Rp {{ number_format($loan->monthly_installment, 0, ',', '.') }}/bln</p>
                                 </td>
-                                <td class="px-6 py-4 hidden lg:table-cell">
-                                    <p class="text-xs text-gray-400 italic max-w-[140px] truncate">{{ $loan->purpose ?? '-' }}</p>
-                                </td>
-                                <td class="px-6 py-4 text-right">
+                                <td class="px-6 py-5 text-right">
                                     <a href="{{ route('admin.loans.show', $loan->id) }}"
-                                       class="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-600 text-[11px] font-black px-3.5 py-2 rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
-                                        Review <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                                       class="inline-flex items-center gap-2 bg-blue-600 text-white text-[11px] font-black px-5 py-2.5 rounded-xl hover:bg-slate-900 transition-all shadow-lg shadow-blue-500/20 hover:shadow-none">
+                                       Review <i class="fa-solid fa-arrow-right text-[9px]"></i>
                                     </a>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-12 text-center">
-                                    <i class="fa-solid fa-check-circle text-gray-200 text-3xl mb-2 block"></i>
-                                    <p class="text-gray-400 text-sm font-medium">Tidak ada pengajuan pinjaman baru.</p>
+                                <td colspan="4" class="px-6 py-16 text-center">
+                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-dashed border-gray-300">
+                                        <i class="fa-solid fa-mug-hot text-gray-300 text-xl"></i>
+                                    </div>
+                                    <p class="text-slate-400 text-sm font-medium tracking-tight">Semua pengajuan telah diproses.</p>
                                 </td>
                             </tr>
                             @endforelse
@@ -176,98 +189,122 @@
                 </div>
             </div>
 
-            {{-- Aktivitas 7 Hari --}}
-            <div class="bg-white rounded-[1.75rem] border border-gray-100 shadow-sm p-7">
-                <div class="mb-6">
-                    <h3 class="font-black text-base text-gray-900 leading-none">Aktivitas 7 Hari Terakhir</h3>
-                    <p class="text-[10px] text-gray-400 font-medium mt-1">Volume transaksi harian</p>
+            {{-- 7-Day Performance Chart (Clean Style) --}}
+            <div class="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm">
+                <div class="flex items-center justify-between mb-10">
+                    <div>
+                        <h3 class="font-black text-lg text-slate-900 tracking-tight">Performa Transaksi</h3>
+                        <p class="text-xs text-slate-400 font-medium mt-1">Statistik volume 7 hari terakhir</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Volume (IDR)</span>
+                    </div>
                 </div>
+                
                 @php $maxVolume = $dailyTransactions->max('volume') ?: 1; @endphp
-                <div class="space-y-3.5">
+                <div class="space-y-6">
                     @foreach($dailyTransactions as $dt)
-                    <div class="flex items-center gap-4">
-                        <p class="w-14 text-[10px] font-black text-gray-400 uppercase shrink-0">
-                            {{ \Carbon\Carbon::parse($dt->date)->format('d M') }}
-                        </p>
-                        <div class="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-indigo-500 rounded-full transition-all duration-700"
-                                 style="width: {{ min(($dt->volume / $maxVolume) * 100, 100) }}%"></div>
+                    <div class="group">
+                        <div class="flex justify-between items-end mb-2">
+                            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                {{ \Carbon\Carbon::parse($dt->date)->format('d M') }}
+                            </p>
+                            <p class="text-xs font-black text-slate-900 tabular-nums">
+                                <span class="text-[10px] text-slate-400 font-normal mr-1">IDR</span>{{ number_format($dt->volume, 0, ',', '.') }}
+                            </p>
                         </div>
-                        <p class="w-36 text-right text-xs font-black text-gray-700 shrink-0">
-                            Rp {{ number_format($dt->volume, 0, ',', '.') }}
-                        </p>
+                        <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden border border-gray-100 shadow-inner">
+                            <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-1000 ease-out group-hover:brightness-110"
+                                 style="width: {{ min(($dt->volume / $maxVolume) * 100, 100) }}%">
+                            </div>
+                        </div>
                     </div>
                     @endforeach
                 </div>
             </div>
-
         </div>
 
         {{-- RIGHT COLUMN --}}
-        <div class="space-y-6">
+        <div class="space-y-8">
 
-            {{-- Nasabah Terbaru --}}
-            <div class="bg-white rounded-[1.75rem] border border-gray-100 shadow-sm p-6">
-                <div class="flex items-center justify-between mb-5">
+            {{-- New Members List --}}
+            <div class="bg-white rounded-3xl border border-gray-200 p-7 shadow-sm overflow-hidden relative">
+                <div class="flex items-center justify-between mb-8">
                     <div>
-                        <h3 class="font-black text-base text-gray-900 leading-none">Nasabah Terbaru</h3>
-                        <p class="text-[10px] text-gray-400 font-medium mt-1">Registrasi terkini</p>
+                        <h3 class="font-black text-base text-slate-900 tracking-tight">Nasabah Baru</h3>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Join Recently</p>
                     </div>
-                    <a href="{{ route('admin.users.index') }}" class="text-indigo-600 text-[10px] font-black hover:underline uppercase tracking-wider">
-                        Semua
+                    <a href="{{ route('admin.users.index') }}" class="w-8 h-8 rounded-full bg-slate-50 border border-gray-200 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all">
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
                     </a>
                 </div>
-                <div class="space-y-4">
+                
+                <div class="space-y-6 relative z-10">
                     @foreach($newUsers as $u)
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center font-black text-gray-600 text-sm flex-shrink-0">
+                    <div class="flex items-center gap-4 group">
+                        <div class="w-11 h-11 bg-white border border-gray-200 rounded-2xl flex items-center justify-center font-black text-blue-600 text-sm shadow-sm group-hover:border-blue-600 transition-colors">
                             {{ strtoupper(substr($u->name, 0, 1)) }}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-bold text-gray-900 leading-none truncate">{{ $u->name }}</p>
-                            <p class="text-[10px] text-gray-400 font-medium mt-0.5 truncate">{{ $u->email }}</p>
+                            <p class="text-sm font-black text-slate-900 leading-none truncate tracking-tight">{{ $u->name }}</p>
+                            <p class="text-[11px] text-slate-400 font-medium mt-1 truncate">{{ $u->email }}</p>
                         </div>
-                        <a href="{{ route('admin.users.show', $u->id) }}"
-                           class="w-8 h-8 rounded-lg bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 flex items-center justify-center text-gray-400 transition-colors flex-shrink-0">
-                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        <a href="{{ route('admin.users.show', $u->id) }}" class="text-slate-300 hover:text-blue-600 transition-colors">
+                            <i class="fa-solid fa-circle-user text-xl"></i>
                         </a>
                     </div>
                     @endforeach
                 </div>
             </div>
 
-            {{-- Jenis Transaksi Hari Ini --}}
-            <div class="bg-indigo-600 rounded-[1.75rem] p-6 text-white shadow-xl shadow-indigo-200">
-                <div class="flex items-center gap-2.5 mb-5">
-                    <div class="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-chart-pie text-white text-sm"></i>
+            {{-- Type Distribution - Premium Card --}}
+            <div class="bg-gradient-to-br from-blue-700 to-indigo-900 rounded-3xl p-8 text-white shadow-2xl shadow-blue-900/30 relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/20 shadow-inner">
+                            <i class="fa-solid fa-chart-pie text-blue-200"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-black text-sm uppercase tracking-widest">Distribusi Transaksi</h3>
+                            <p class="text-[10px] text-blue-200/60 font-medium">Berdasarkan Tipe (Hari Ini)</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="font-black text-sm leading-none">Distribusi Transaksi</h3>
-                        <p class="text-[10px] text-indigo-300 font-medium mt-0.5">Hari ini</p>
+                    
+                    <div class="space-y-4">
+                        @forelse($todayTypeDistribution as $type)
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-blue-100/80 tracking-wide">{{ ucwords(str_replace('_', ' ', $type->type)) }}</span>
+                                <span class="tabular-nums">{{ $type->count }}</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-300 rounded-full" style="width: {{ ($type->count / max($todayTypeDistribution->sum('count'), 1)) * 100 }}%"></div>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="text-center py-6">
+                            <div class="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fa-solid fa-hourglass-start text-blue-300/30"></i>
+                            </div>
+                            <p class="text-[11px] text-blue-300/50 font-black uppercase tracking-widest">No Traffic Yet</p>
+                        </div>
+                        @endforelse
                     </div>
                 </div>
-                <div class="space-y-3">
-                    @forelse($todayTypeDistribution as $type)
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-indigo-100 capitalize">
-                            {{ ucwords(str_replace('_', ' ', $type->type)) }}
-                        </span>
-                        <span class="bg-white/15 border border-white/10 px-3 py-1 rounded-lg text-xs font-black tabular-nums">
-                            {{ $type->count }}
-                        </span>
-                    </div>
-                    @empty
-                    <div class="text-center py-4">
-                        <i class="fa-solid fa-inbox text-indigo-400 text-2xl mb-2 block"></i>
-                        <p class="text-xs text-indigo-300 font-medium">Belum ada transaksi hari ini.</p>
-                    </div>
-                    @endforelse
-                </div>
+                
+                {{-- Decorative circles --}}
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-24 h-24 bg-blue-400/10 rounded-full -ml-12 -mb-12 blur-2xl"></div>
             </div>
 
         </div>
     </div>
-
 </div>
+
+<style>
+    /* Custom font-black tracking for premium feel */
+    .tracking-tighter { letter-spacing: -0.05em; }
+    .tracking-tight { letter-spacing: -0.025em; }
+</style>
 @endsection

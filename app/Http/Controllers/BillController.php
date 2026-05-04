@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Bill;
 use App\Models\Account;
+use App\Models\Transaction;
+use App\Models\BillPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class BillController extends Controller
 {
+    const ADMIN_FEE = 2500;
+
     public function index()
     {
         $bills = Bill::active()->get();
@@ -23,65 +28,74 @@ class BillController extends Controller
         }
 
         /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $accounts = $user->accounts;
+        $user     = Auth::user();
+        $accounts = $user->accounts()->where('status', 'active')->get();
 
         return view('bills.pay', compact('bill', 'accounts'));
     }
 
-    // TAMBAHKAN FUNGSI INI
     public function pay(Request $request, Bill $bill)
     {
         $request->validate([
             'account_id'      => 'required|exists:accounts,id',
             'customer_number' => 'required|string|min:5',
             'amount'          => 'required|numeric|min:1000',
+            'pin'             => 'required|digits:6',
         ]);
 
         $account = Account::where('id', $request->account_id)
                           ->where('user_id', Auth::id())
                           ->firstOrFail();
 
-        if ($account->balance < $request->amount) {
-            return back()->withErrors(['amount' => 'Saldo tidak mencukupi.'])->withInput();
+        if ($account->status !== 'active') {
+            return back()->with('error', 'Rekening tidak aktif.')->withInput();
         }
 
-       //2. Proses Transaksi
-            // 2. Proses Transaksi
-        DB::transaction(function () use ($account, $bill, $request) {
-            // Ambil saldo sebelum dipotong untuk audit trail
+        if (!Hash::check($request->pin, $account->pin)) {
+            return back()->withErrors(['pin' => 'PIN tidak sesuai.'])->withInput();
+        }
+
+        // FIX: total = tagihan + admin fee
+        $total = (int) $request->amount + self::ADMIN_FEE;
+
+        if ($account->balance < $total) {
+            return back()->withErrors([
+                'amount' => 'Saldo tidak mencukupi. Dibutuhkan Rp ' . number_format($total, 0, ',', '.'),
+            ])->withInput();
+        }
+
+        DB::transaction(function () use ($account, $bill, $request, $total) {
             $balanceBefore = $account->balance;
 
-            // A. Potong Saldo Rekening
-            $account->decrement('balance', $request->amount);
-            
-            // Ambil saldo setelah dipotong
-            $balanceAfter = $account->balance;
+            // Potong saldo dengan TOTAL (tagihan + admin fee)
+            $account->decrement('balance', $total);
+            $account->refresh();
 
-            // B. Buat Record di Tabel Transaksi Utama
-            $transaction = \App\Models\Transaction::create([
-                'user_id'          => Auth::id(),
+            $transaction = Transaction::create([
                 'account_id'       => $account->id,
-                'amount'           => $request->amount,
                 'type'             => 'withdrawal',
-                'description'      => 'Pembayaran Tagihan ' . $bill->bill_name,
-                'status'           => 'success',
-                'reference_number' => 'TRX-' . strtoupper(str()->random(12)),
-                // TAMBAHKAN KOLOM AUDIT INI:
+                'amount'           => $total,
                 'balance_before'   => $balanceBefore,
-                'balance_after'    => $balanceAfter, // Jika ada kolom 'balance_after', masukkan juga
+                'balance_after'    => $account->balance,
+                'description'      => 'Pembayaran Tagihan ' . $bill->bill_name,
+                'reference_number' => 'TRX-' . strtoupper(str()->random(12)),
+                'status'           => 'success',
             ]);
 
-            // C. Simpan ke Riwayat Tagihan
-            $bill->payments()->create([
-                'user_id'         => Auth::id(),
-                'account_id'      => $account->id,
-                'customer_number' => $request->customer_number,
-                'amount'          => $request->amount,
-                'status'          => 'success',
+            BillPayment::create([
                 'transaction_id'  => $transaction->id,
+                'account_id'      => $account->id,
+                'bill_id'         => $bill->id,
+                'customer_number' => $request->customer_number,
+                'customer_name'   => null,
+                'amount'          => (int) $request->amount,
+                'admin_fee'       => self::ADMIN_FEE,
+                'period'          => null,
+                'status'          => 'success',
             ]);
         });
-        return redirect()->route('bills.index')->with('success', 'Pembayaran ' . $bill->bill_name . ' berhasil disimpan!');
+
+        return redirect()->route('bills.index')
+            ->with('success', 'Pembayaran ' . $bill->bill_name . ' sebesar Rp ' . number_format($request->amount + self::ADMIN_FEE, 0, ',', '.') . ' berhasil!');
     }
 }
